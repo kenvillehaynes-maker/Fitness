@@ -1,0 +1,3635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0A1628">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="1:15">
+<title>1:15, HYROX Tracker</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%230A1628'/%3E%3Ctext x='90' y='105' font-family='-apple-system,sans-serif' font-size='52' font-weight='800' fill='%23F5C04A' text-anchor='middle'%3E1:15%3C/text%3E%3C/svg%3E">
+
+<style>
+:root {
+  --bg: #0A1628;
+  --bg-elev: #0F1F35;
+  --bg-card: #142940;
+  --bg-card-hi: #1B3553;
+  --line: #1F3A5C;
+  --text: #E8EEF6;
+  --text-dim: #8FA3BD;
+  --text-faint: #5C7593;
+  --gold: #F5C04A;
+  --gold-soft: #C99A2D;
+  --green: #4CC38A;
+  --amber: #F0A742;
+  --red: #E25555;
+  --purple: #9B7CE8;
+  --teal: #4FB8C7;
+  --blue: #5B9BE0;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Bricolage Grotesque', -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: calc(72px + env(safe-area-inset-bottom));
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+/* === HEADER === */
+.header {
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(180deg, var(--bg-elev) 0%, var(--bg) 100%);
+  position: sticky; top: 0; z-index: 50;
+  backdrop-filter: blur(12px);
+}
+.header-row { display: flex; justify-content: space-between; align-items: baseline; }
+.brand {
+  font-family: 'Bricolage Grotesque'; font-weight: 800; font-size: 28px;
+  letter-spacing: -1px;
+  background: linear-gradient(135deg, var(--gold) 0%, #FFE08A 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.brand-sub { font-size: 11px; color: var(--text-faint); letter-spacing: 2px; text-transform: uppercase; margin-top: -2px; }
+.countdown { text-align: right; }
+.countdown-num { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 24px; color: var(--text); }
+.countdown-lbl { font-size: 10px; color: var(--text-faint); letter-spacing: 1.5px; text-transform: uppercase; }
+
+/* === TAB BAR (BOTTOM) === */
+.tabbar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  background: var(--bg-elev);
+  border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom);
+  height: calc(72px + env(safe-area-inset-bottom));
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: none; border: none; color: var(--text-faint); cursor: pointer;
+  font-family: inherit; font-size: 11px; font-weight: 500;
+  padding: 8px 4px; gap: 4px;
+  transition: color .2s ease;
+}
+.tab svg { width: 24px; height: 24px; stroke: currentColor; stroke-width: 2; fill: none; }
+.tab.active { color: var(--gold); }
+.tab.active svg { stroke: var(--gold); }
+
+/* === SCREEN === */
+.screen { display: none; padding: 16px 16px 24px; min-height: calc(100vh - 130px); }
+.screen.active { display: block; }
+
+/* === CARDS === */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.card-hi { background: var(--bg-card-hi); }
+
+/* === TODAY === */
+.today-date {
+  font-size: 13px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.today-week-info {
+  font-size: 12px; color: var(--text-faint); margin-bottom: 12px;
+}
+.session-card {
+  position: relative;
+  border-left: 4px solid var(--blue);
+  padding-left: 16px;
+}
+.session-card.done { opacity: 0.55; }
+.session-card.done .session-title { text-decoration: line-through; }
+.session-type {
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight: 600;
+  margin-bottom: 4px;
+}
+.session-title {
+  font-size: 22px; font-weight: 700; line-height: 1.2; margin-bottom: 6px;
+  letter-spacing: -0.5px;
+}
+.session-detail {
+  font-size: 14px; color: var(--text-dim); margin-bottom: 12px; line-height: 1.5;
+}
+
+.type-run { border-left-color: var(--amber); }
+.type-run .session-type { color: var(--amber); }
+.type-bike { border-left-color: var(--teal); }
+.type-bike .session-type { color: var(--teal); }
+.type-strength { border-left-color: var(--purple); }
+.type-strength .session-type { color: var(--purple); }
+.type-race { border-left-color: var(--red); background: rgba(226,85,85,0.06); }
+.type-race .session-type { color: var(--red); }
+.type-rest { border-left-color: var(--text-faint); }
+.type-rest .session-type { color: var(--text-faint); }
+.type-hyrox { border-left-color: var(--gold); background: rgba(245,192,74,0.06); }
+.type-hyrox .session-type { color: var(--gold); }
+
+.complete-btn {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 14px;
+  background: var(--bg-elev); border: 1px solid var(--line);
+  border-radius: 12px; color: var(--text);
+  font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: all .15s ease;
+}
+.complete-btn:active { transform: scale(0.98); }
+.complete-btn.done {
+  background: rgba(76,195,138,0.12); border-color: var(--green); color: var(--green);
+}
+.checkbox {
+  width: 22px; height: 22px; border-radius: 6px;
+  border: 2px solid var(--text-faint);
+  display: grid; place-items: center; flex-shrink: 0;
+}
+.complete-btn.done .checkbox { background: var(--green); border-color: var(--green); }
+.checkbox svg { width: 14px; height: 14px; stroke: var(--bg); stroke-width: 3; fill: none; display: none; }
+.complete-btn.done .checkbox svg { display: block; }
+
+/* === LOG FORM === */
+.log-section { margin-top: 12px; }
+.log-title {
+  font-size: 12px; color: var(--text-faint); letter-spacing: 1.5px; text-transform: uppercase;
+  margin-bottom: 8px; font-weight: 600;
+}
+.log-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.log-grid.full { grid-template-columns: 1fr; }
+.log-field {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.log-field label {
+  font-size: 11px; color: var(--text-faint); letter-spacing: 0.5px;
+}
+.log-field input, .log-field textarea, .log-field select {
+  background: var(--bg-elev); border: 1px solid var(--line);
+  border-radius: 10px; padding: 12px;
+  color: var(--text); font-family: 'JetBrains Mono'; font-size: 16px;
+  outline: none; transition: border-color .15s ease;
+  width: 100%;
+}
+.log-field textarea {
+  font-family: 'Bricolage Grotesque'; min-height: 60px; resize: vertical;
+}
+.log-field input:focus, .log-field textarea:focus, .log-field select:focus {
+  border-color: var(--gold);
+}
+.target-line {
+  font-size: 11px; color: var(--gold-soft); margin-top: 2px;
+  font-family: 'JetBrains Mono';
+}
+
+/* === EXERCISE BLOCKS (in-session) === */
+.ex-toggle-wrap { margin-top: 14px; margin-bottom: 4px; }
+.ex-toggle {
+  width: 100%; padding: 10px 14px;
+  background: var(--bg-elev); border: 1px solid var(--line);
+  border-radius: 10px; color: var(--text-dim);
+  font-family: inherit; font-size: 12px; font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase;
+  cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center;
+  transition: all .15s ease;
+}
+.ex-toggle:active { transform: scale(0.99); }
+.ex-toggle svg { transition: transform .2s ease; }
+.ex-toggle.open { color: var(--text); }
+.ex-toggle.open svg { transform: rotate(180deg); }
+.ex-content {
+  max-height: 0; overflow: hidden;
+  transition: max-height .3s ease;
+}
+.ex-content.open {
+  max-height: 4000px;
+  margin-top: 10px;
+}
+
+.ex-block {
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--text-faint);
+  border-radius: 10px;
+  padding: 10px 12px 10px 14px;
+  margin-bottom: 8px;
+}
+.ex-block.heavy   { border-left-color: var(--red); }
+.ex-block.power   { border-left-color: var(--amber); }
+.ex-block.warmup  { border-left-color: var(--green); }
+.ex-block.cooldown{ border-left-color: var(--blue); }
+.ex-block.shin    { border-left-color: var(--teal); }
+.ex-block-name {
+  font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase;
+  font-weight: 700; color: var(--text-faint); margin-bottom: 6px;
+}
+.ex-block.heavy .ex-block-name    { color: var(--red); }
+.ex-block.power .ex-block-name    { color: var(--amber); }
+.ex-block.warmup .ex-block-name   { color: var(--green); }
+.ex-block.cooldown .ex-block-name { color: var(--blue); }
+.ex-block.shin .ex-block-name     { color: var(--teal); }
+.ex-list {
+  list-style: none; padding: 0; margin: 0;
+}
+.ex-list li {
+  font-size: 13px; line-height: 1.45;
+  padding: 3px 0 3px 14px; position: relative;
+  color: var(--text);
+}
+.ex-list li::before {
+  content: ""; position: absolute; left: 2px; top: 11px;
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--text-faint);
+}
+.ex-list li.warn { color: var(--red); font-weight: 600; }
+.ex-list li.warn::before { background: var(--red); }
+
+/* === WEEK STRIP === */
+.week-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 12px;
+}
+.week-nav {
+  display: flex; gap: 8px; align-items: center;
+}
+.week-btn {
+  width: 36px; height: 36px;
+  background: var(--bg-card); border: 1px solid var(--line);
+  border-radius: 10px; color: var(--text);
+  font-size: 18px; cursor: pointer; display: grid; place-items: center;
+}
+.week-btn:disabled { opacity: 0.3; }
+.week-title {
+  font-size: 18px; font-weight: 700;
+}
+.week-subtitle {
+  font-size: 13px; color: var(--text-dim);
+}
+.phase-badge {
+  display: inline-block; font-size: 10px; letter-spacing: 1.5px;
+  text-transform: uppercase; padding: 3px 8px; border-radius: 4px;
+  font-weight: 700; margin-bottom: 8px;
+}
+.phase-base { background: rgba(76,195,138,0.15); color: var(--green); }
+.phase-threshold { background: rgba(240,167,66,0.15); color: var(--amber); }
+.phase-vo2 { background: rgba(155,124,232,0.15); color: var(--purple); }
+.phase-sharp { background: rgba(91,155,224,0.15); color: var(--blue); }
+.phase-race { background: rgba(226,85,85,0.15); color: var(--red); }
+
+.day-row {
+  display: flex; gap: 12px; padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer; transition: background .15s ease;
+}
+.day-row:last-child { border-bottom: none; }
+.day-row:active { background: rgba(255,255,255,0.02); }
+.day-row.today {
+  margin: 8px -12px; padding: 12px;
+  background: rgba(245,192,74,0.06); border-radius: 12px;
+  border-bottom: none;
+}
+.day-pill {
+  width: 44px; flex-shrink: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-start; padding-top: 2px;
+}
+.day-name {
+  font-size: 11px; letter-spacing: 1px; color: var(--text-faint);
+  text-transform: uppercase; font-weight: 600;
+}
+.day-num {
+  font-size: 20px; font-weight: 700; color: var(--text);
+  font-family: 'JetBrains Mono';
+}
+.day-row.today .day-num { color: var(--gold); }
+.day-content { flex: 1; min-width: 0; }
+.day-type-label {
+  font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+  font-weight: 700; margin-bottom: 2px;
+}
+.day-title {
+  font-size: 15px; font-weight: 600; line-height: 1.3; margin-bottom: 2px;
+}
+.day-detail {
+  font-size: 12px; color: var(--text-dim); line-height: 1.4;
+}
+.day-status {
+  width: 20px; flex-shrink: 0; display: grid; place-items: center;
+}
+.day-status .check {
+  width: 18px; height: 18px; border-radius: 50%; background: var(--green);
+  display: grid; place-items: center;
+}
+.day-status .check svg { width: 10px; height: 10px; stroke: var(--bg); stroke-width: 4; fill: none; }
+
+/* === STATS / PROGRESS === */
+.stat-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;
+}
+.stat-card {
+  background: var(--bg-card); border: 1px solid var(--line);
+  border-radius: 14px; padding: 16px;
+}
+.stat-num {
+  font-family: 'JetBrains Mono'; font-weight: 700; font-size: 28px; color: var(--text);
+  letter-spacing: -1px;
+}
+.stat-num.gold { color: var(--gold); }
+.stat-num.green { color: var(--green); }
+.stat-num.amber { color: var(--amber); }
+.stat-lbl {
+  font-size: 11px; color: var(--text-faint); letter-spacing: 1.5px;
+  text-transform: uppercase; margin-top: 2px; font-weight: 600;
+}
+.progress-bar {
+  height: 6px; background: var(--bg-elev); border-radius: 3px;
+  overflow: hidden; margin-top: 12px;
+}
+.progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--gold) 0%, #FFE08A 100%);
+  transition: width .4s ease;
+}
+
+.section-title {
+  font-size: 12px; color: var(--text-faint); letter-spacing: 2px;
+  text-transform: uppercase; margin: 24px 0 12px; font-weight: 700;
+}
+
+.veto-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 0; border-bottom: 1px solid var(--line);
+}
+.veto-row:last-child { border-bottom: none; }
+.veto-info { flex: 1; }
+.veto-date {
+  font-family: 'JetBrains Mono'; font-size: 13px; color: var(--text-dim);
+  letter-spacing: 0.5px;
+}
+.veto-test {
+  font-size: 15px; font-weight: 600; margin-top: 2px;
+}
+.veto-target {
+  font-family: 'JetBrains Mono'; font-size: 16px; font-weight: 700;
+  color: var(--gold);
+}
+
+.chart-card {
+  background: var(--bg-card); border: 1px solid var(--line);
+  border-radius: 14px; padding: 16px; margin-bottom: 12px;
+}
+.chart-title {
+  font-size: 13px; color: var(--text-dim); letter-spacing: 1px;
+  text-transform: uppercase; font-weight: 600; margin-bottom: 12px;
+}
+.chart {
+  height: 160px; position: relative;
+}
+.chart svg { width: 100%; height: 100%; }
+
+.phase-chips {
+  display: flex; gap: 6px; overflow-x: auto;
+  padding: 4px 0 8px; margin: 0 -16px 12px; padding-left: 16px; padding-right: 16px;
+  scrollbar-width: none;
+}
+.phase-chips::-webkit-scrollbar { display: none; }
+.phase-chip {
+  padding: 8px 14px; border-radius: 20px;
+  background: var(--bg-card); border: 1px solid var(--line);
+  font-size: 12px; font-weight: 600; white-space: nowrap;
+  color: var(--text-dim); cursor: pointer;
+  flex-shrink: 0;
+}
+.phase-chip.active {
+  background: var(--gold); color: var(--bg); border-color: var(--gold);
+}
+
+/* === INFO TABS === */
+.info-tabs {
+  display: flex; gap: 6px; overflow-x: auto;
+  padding: 4px 0 12px; margin: -8px -16px 12px;
+  padding-left: 16px; padding-right: 16px;
+  scrollbar-width: none;
+  position: sticky; top: 70px; z-index: 5;
+  background: var(--bg);
+}
+.info-tabs::-webkit-scrollbar { display: none; }
+.info-tab {
+  padding: 8px 16px; border-radius: 20px;
+  background: var(--bg-card); border: 1px solid var(--line);
+  font-family: inherit; font-size: 13px; font-weight: 600; white-space: nowrap;
+  color: var(--text-dim); cursor: pointer; flex-shrink: 0;
+}
+.info-tab.active {
+  background: var(--gold); color: var(--bg); border-color: var(--gold);
+}
+
+/* Info content */
+.info-block { margin-bottom: 20px; }
+.info-h2 {
+  font-size: 13px; color: var(--text-faint); letter-spacing: 2px;
+  text-transform: uppercase; font-weight: 700;
+  margin: 24px 0 10px;
+}
+.info-h2:first-child { margin-top: 0; }
+.info-h3 {
+  font-size: 14px; font-weight: 700; margin-bottom: 8px;
+  color: var(--text);
+}
+.info-h3.gold { color: var(--gold); }
+.info-h3.purple { color: var(--purple); }
+.info-h3.amber { color: var(--amber); }
+.info-h3.red { color: var(--red); }
+.info-p {
+  font-size: 14px; color: var(--text-dim); line-height: 1.5;
+  margin-bottom: 8px;
+}
+.info-list {
+  list-style: none; padding: 0;
+}
+.info-list li {
+  font-size: 14px; line-height: 1.5; padding: 4px 0 4px 18px;
+  position: relative; color: var(--text);
+}
+.info-list li::before {
+  content: "•"; position: absolute; left: 4px; color: var(--text-faint);
+}
+.info-list li.warn::before { color: var(--red); }
+.info-list li.warn { color: var(--red); }
+
+.info-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 13px; margin-bottom: 8px;
+}
+.info-table th {
+  text-align: left; padding: 8px 10px;
+  background: var(--bg-elev); color: var(--text);
+  font-weight: 700; font-size: 11px;
+  letter-spacing: 1px; text-transform: uppercase;
+  border-bottom: 1px solid var(--line);
+}
+.info-table td {
+  padding: 10px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  color: var(--text);
+}
+.info-table tr:last-child td { border-bottom: none; }
+.info-table .mono { font-family: 'JetBrains Mono'; font-weight: 500; }
+
+.info-row-zone td:first-child { font-weight: 700; width: 60px; }
+.zone-z1 { color: var(--text-dim); }
+.zone-z2 { color: var(--green); }
+.zone-z3 { color: var(--amber); }
+.zone-z4 { color: var(--blue); }
+.zone-z5 { color: var(--red); }
+
+.block-card {
+  background: var(--bg-card); border: 1px solid var(--line);
+  border-radius: 14px; padding: 14px 16px;
+  margin-bottom: 10px;
+}
+.block-card.heavy { border-left: 4px solid var(--red); }
+.block-card.power { border-left: 4px solid var(--amber); }
+.block-card.warmup { border-left: 4px solid var(--green); }
+.block-card.cooldown { border-left: 4px solid var(--blue); }
+.block-name {
+  font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+  font-weight: 700; margin-bottom: 4px; color: var(--text-faint);
+}
+.block-card.heavy .block-name { color: var(--red); }
+.block-card.power .block-name { color: var(--amber); }
+.block-card.warmup .block-name { color: var(--green); }
+.block-card.cooldown .block-name { color: var(--blue); }
+.block-title {
+  font-size: 16px; font-weight: 700; margin-bottom: 8px;
+}
+
+.warning-box {
+  background: rgba(226,85,85,0.08);
+  border: 1px solid rgba(226,85,85,0.3);
+  border-left: 4px solid var(--red);
+  padding: 12px 14px; border-radius: 10px;
+  margin: 12px 0;
+  font-size: 13px; line-height: 1.5; color: var(--text);
+}
+.warning-box strong { color: var(--red); }
+
+.callout-box {
+  background: rgba(245,192,74,0.08);
+  border: 1px solid rgba(245,192,74,0.3);
+  border-left: 4px solid var(--gold);
+  padding: 12px 14px; border-radius: 10px;
+  margin: 12px 0;
+  font-size: 13px; line-height: 1.5; color: var(--text);
+}
+.callout-box strong { color: var(--gold); }
+
+/* === EDIT MODE === */
+.edit-toggle {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  color: var(--text-dim);
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  display: grid; place-items: center;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+.edit-toggle.active {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--bg);
+}
+body.edit-mode {
+  /* Subtle gold glow on the edges to indicate edit mode */
+}
+body.edit-mode .header {
+  box-shadow: inset 0 -3px 0 var(--gold);
+}
+.edit-banner {
+  background: rgba(245,192,74,0.12);
+  border: 1px solid rgba(245,192,74,0.3);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 13px;
+  color: var(--gold);
+  font-weight: 600;
+}
+.edit-banner button {
+  background: none;
+  border: 1px solid rgba(245,192,74,0.4);
+  color: var(--gold);
+  font-family: inherit;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.edit-pencil {
+  width: 22px; height: 22px;
+  display: grid; place-items: center;
+  color: var(--gold);
+  font-size: 14px;
+  opacity: 0.8;
+}
+.empty-day {
+  border: 1px dashed var(--line);
+  margin: 6px 0;
+  border-radius: 10px;
+  background: rgba(245,192,74,0.04);
+}
+.edit-mini {
+  background: var(--bg-card);
+  border: 1px solid rgba(245,192,74,0.4);
+  color: var(--gold);
+  font-family: inherit;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-left: 8px;
+}
+.edit-form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+.edit-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.edit-form label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-faint);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.edit-form input,
+.edit-form select,
+.edit-form textarea {
+  width: 100%;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 15px;
+  outline: none;
+}
+.edit-form input:focus,
+.edit-form select:focus,
+.edit-form textarea:focus {
+  border-color: var(--gold);
+}
+.edit-form textarea { min-height: 60px; resize: vertical; }
+.edit-actions {
+  display: flex; gap: 10px;
+  margin-top: 16px;
+}
+.edit-actions button {
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--bg-elev);
+  color: var(--text);
+}
+.edit-actions .save {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--bg);
+}
+.edit-actions .delete {
+  background: rgba(226,85,85,0.1);
+  border-color: rgba(226,85,85,0.4);
+  color: var(--red);
+}
+.edit-section-title {
+  font-size: 11px;
+  color: var(--text-faint);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin: 18px 0 8px;
+}
+.station-edit-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 80px auto;
+  gap: 8px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+.station-edit-row input,
+.station-edit-row select {
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+}
+.icon-btn {
+  background: rgba(226,85,85,0.1);
+  border: 1px solid rgba(226,85,85,0.3);
+  color: var(--red);
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: grid; place-items: center;
+  font-size: 16px;
+  font-family: inherit;
+}
+.add-row-btn {
+  width: 100%;
+  background: rgba(245,192,74,0.08);
+  border: 1px dashed rgba(245,192,74,0.4);
+  color: var(--gold);
+  padding: 12px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+/* === MODAL === */
+.modal-bg {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  z-index: 200; display: none; backdrop-filter: blur(4px);
+}
+.modal-bg.show { display: block; }
+.modal {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 201;
+  background: var(--bg-elev); border-radius: 24px 24px 0 0;
+  border-top: 1px solid var(--line);
+  max-height: 85vh; overflow-y: auto;
+  transform: translateY(100%); transition: transform .3s ease;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.modal.show { transform: translateY(0); }
+.modal-header {
+  position: sticky; top: 0; background: var(--bg-elev); z-index: 1;
+  padding: 16px 20px; border-bottom: 1px solid var(--line);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.modal-grip {
+  width: 40px; height: 4px; background: var(--text-faint); border-radius: 2px;
+  margin: 8px auto -4px;
+}
+.modal-close {
+  background: none; border: none; color: var(--text-dim);
+  font-size: 24px; cursor: pointer; padding: 0; line-height: 1;
+}
+.modal-body { padding: 20px; }
+
+/* === TOAST === */
+.toast {
+  position: fixed; bottom: calc(86px + env(safe-area-inset-bottom));
+  left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--green); color: var(--bg);
+  padding: 12px 20px; border-radius: 24px;
+  font-weight: 600; font-size: 14px;
+  z-index: 300; opacity: 0; transition: all .3s ease;
+  pointer-events: none;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* === INSTALL HINT === */
+.install-hint {
+  background: linear-gradient(135deg, rgba(245,192,74,0.1) 0%, rgba(245,192,74,0.04) 100%);
+  border: 1px solid rgba(245,192,74,0.3);
+  padding: 14px 16px; border-radius: 14px; margin-bottom: 12px;
+  font-size: 13px; color: var(--text-dim); line-height: 1.5;
+}
+.install-hint strong { color: var(--gold); }
+.install-hint .dismiss {
+  background: none; border: 1px solid var(--line); color: var(--text-dim);
+  font-size: 11px; padding: 4px 10px; border-radius: 6px;
+  font-family: inherit; cursor: pointer; margin-top: 8px;
+}
+
+/* === MISC === */
+.empty {
+  text-align: center; padding: 40px 20px;
+  color: var(--text-faint);
+}
+.divider { height: 1px; background: var(--line); margin: 16px 0; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.pulse { animation: pulse 2s ease-in-out infinite; }
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-row">
+    <div>
+      <div class="brand" id="headerBrand">1:15</div>
+      <div class="brand-sub" id="headerSubtitle">HYROX · 29 Oct</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="edit-toggle" id="editToggle" aria-label="Edit mode">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 20h9M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+        </svg>
+      </button>
+      <div class="countdown">
+        <div class="countdown-num mono" id="countdownNum">—</div>
+        <div class="countdown-lbl">days to race</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TODAY SCREEN -->
+<div class="screen active" id="screen-today">
+  <div id="installHintWrap"></div>
+  <div class="today-date" id="todayDate">—</div>
+  <div class="today-week-info" id="todayWeekInfo"></div>
+  <div id="todayCard"></div>
+</div>
+
+<!-- WEEK SCREEN -->
+<div class="screen" id="screen-week">
+  <div class="week-header">
+    <div class="week-nav">
+      <button class="week-btn" id="weekPrev">‹</button>
+      <button class="week-btn" id="weekNext">›</button>
+    </div>
+    <div style="text-align:right;">
+      <div class="week-title" id="weekTitle">Week 1</div>
+      <div class="week-subtitle" id="weekDates">5–10 May</div>
+    </div>
+  </div>
+  <div id="weekPhaseBadge"></div>
+  <div id="weekDays"></div>
+</div>
+
+<!-- PLAN SCREEN -->
+<div class="screen" id="screen-plan">
+  <div class="phase-chips" id="phaseChips"></div>
+  <div id="planContent"></div>
+</div>
+
+<!-- STATS SCREEN -->
+<div class="screen" id="screen-stats">
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-num gold" id="statComplete">0</div>
+      <div class="stat-lbl">Sessions Done</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="statPct">0%</div>
+      <div class="stat-lbl">Complete</div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num green" id="statRuns">0</div>
+      <div class="stat-lbl">Runs Logged</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num amber" id="statBikes">0</div>
+      <div class="stat-lbl">Bikes Logged</div>
+    </div>
+  </div>
+
+  <div class="section-title" id="targetsTitle">Key Targets</div>
+  <div class="card" id="targetsCard"></div>
+
+  <div class="section-title">Recovery Check</div>
+  <div class="card" id="recoveryCard">
+    <div style="font-size:13px;color:var(--text-dim);line-height:1.5;margin-bottom:12px;">
+      Quick weekly self-check, log honestly, this catches overtraining before injury.
+    </div>
+    <div class="log-grid">
+      <div class="log-field">
+        <label>Resting HR (am)</label>
+        <input type="text" inputmode="numeric" id="rcRhr" placeholder="e.g. 54">
+      </div>
+      <div class="log-field">
+        <label>Sleep last 3 nights (avg hrs)</label>
+        <input type="text" inputmode="decimal" id="rcSleep" placeholder="e.g. 7.5">
+      </div>
+      <div class="log-field">
+        <label>Shin status</label>
+        <select id="rcShin">
+          <option value="clear">Clear, no signal</option>
+          <option value="niggle">Mild niggle / tightness</option>
+          <option value="pain">Pain (cease running)</option>
+        </select>
+      </div>
+      <div class="log-field">
+        <label>Leg feel today</label>
+        <select id="rcLegs">
+          <option value="fresh">Fresh</option>
+          <option value="ok">Normal</option>
+          <option value="heavy">Heavy / dead</option>
+        </select>
+      </div>
+    </div>
+    <div id="recoveryVerdict" style="margin-top:14px;"></div>
+  </div>
+
+  <div id="editActionsCard"></div>
+
+  <div class="section-title">Run Pace Trend</div>
+  <div class="chart-card">
+    <div class="chart-title">Easy & Quality avg pace (min/km)</div>
+    <div class="chart" id="paceChart"></div>
+  </div>
+
+  <div class="section-title">Strength PRs</div>
+  <div class="card" id="prCard">
+    <div class="empty" style="padding: 20px 0;">Log strength sessions to track PRs</div>
+  </div>
+
+  <div class="section-title">Data</div>
+  <div class="card">
+    <button class="complete-btn" id="exportBtn" style="margin-bottom:10px;">
+      <span style="flex:1;text-align:center;">Export data (JSON)</span>
+    </button>
+    <button class="complete-btn" id="resetBtn" style="color:var(--red);border-color:rgba(226,85,85,0.3);">
+      <span style="flex:1;text-align:center;">Reset all logs</span>
+    </button>
+  </div>
+</div>
+
+<!-- INFO SCREEN -->
+<div class="screen" id="screen-info">
+  <div class="info-tabs" id="infoTabs">
+    <button class="info-tab active" data-info="zones">Zones</button>
+    <button class="info-tab" data-info="strength">Strength</button>
+    <button class="info-tab" data-info="races">Races</button>
+    <button class="info-tab" data-info="rules">Rules</button>
+  </div>
+  <div id="infoContent"></div>
+</div>
+
+<!-- TAB BAR -->
+<nav class="tabbar">
+  <button class="tab active" data-screen="today">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+    Today
+  </button>
+  <button class="tab" data-screen="week">
+    <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+    Week
+  </button>
+  <button class="tab" data-screen="plan">
+    <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+    Plan
+  </button>
+  <button class="tab" data-screen="stats">
+    <svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+    Stats
+  </button>
+  <button class="tab" data-screen="info">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v.01M11 12h1v5h1"/></svg>
+    Info
+  </button>
+</nav>
+
+<!-- MODAL (for editing a day in week view) -->
+<div class="modal-bg" id="modalBg"></div>
+<div class="modal" id="modal">
+  <div class="modal-grip"></div>
+  <div class="modal-header">
+    <div>
+      <div id="modalDate" class="today-date">—</div>
+      <div id="modalWeekInfo" style="font-size:12px;color:var(--text-faint);"></div>
+    </div>
+    <button class="modal-close" id="modalClose">×</button>
+  </div>
+  <div class="modal-body" id="modalBody"></div>
+</div>
+
+<div class="toast" id="toast">Saved</div>
+
+<script>
+// ============ PLAN DATA ============
+// 27 weeks × 7 days. Each session: { type, label, detail, targets? }
+// Types: run, bike, strength, race, rest
+
+const PHASES = {
+  base: { label: 'Base', color: 'green' },
+  threshold: { label: 'Threshold', color: 'amber' },
+  vo2: { label: 'VO2', color: 'purple' },
+  sharp: { label: 'Sharpening', color: 'blue' },
+  race: { label: 'Race Week', color: 'red' }
+};
+
+// Helper to make session objects compact
+const R = (label, detail, targets) => ({ type: 'run', label, detail, targets });
+const B = (label, detail) => ({ type: 'bike', label, detail });
+const S = (label, detail) => ({ type: 'strength', label, detail });
+const RACE = (label, detail) => ({ type: 'race', label, detail });
+const REST = (note) => ({ type: 'rest', label: 'REST', detail: note || '' });
+const HYROX = (label, target) => ({ type: 'hyrox', label, detail: '50% sim · target ' + target, target });
+
+// Standard strength sessions
+const LEGS = S('LEGS', 'Heavy compound + accessories + low-impact power (~100 min)');
+const LEGS_LIGHT = S('LEGS, light', 'Heavy compound 3×5, no explosive block');
+const LEGS_MAINT = S('LEGS, maintenance', '60 min: WU + 3×5 squat + 3×8 RDL + CD');
+const PUSH_FULL = S('PUSH', 'Heavy bench + OHP + accessories + shin/core (~95 min), leg-friendly');
+const PUSH_LIGHT = S('PUSH, lighter', 'Lighter weights, shorter session');
+const PUSH_MAINT = S('PUSH, maintenance', 'Light maintenance only');
+// PUSH_DIAG removed, burpee diagnosis no longer in plan
+const PULL_FULL = S('PULL', 'Heavy compound + accessories (~110 min)');
+const PULL_LIGHT = S('PULL, lighter', 'Lighter weights');
+const PULL_MAINT = S('PULL, maintenance', '30 min: face pulls + stretch only');
+
+// Build the plan: 27 weeks
+// Each week: { num, dates, label, phase, sessions: [Mon..Sun] }
+// First week is Tue 5 May → Sun 10 May (no Mon)
+const PLAN = [
+  { num: 1, startDate: '2026-05-04', dates: '5–10 May', label: 'FYP submission week', phase: 'base',
+    sessions: {
+      Tue: B('BIKE Z2', '90 min + 15 min core'),
+      Wed: S('PUSH', 'Heavy bench + OHP + accessories + shin/core (~95 min), leg-friendly'),
+      Thu: { type: 'run', label: 'RUN 5K Z4 (23:30)', detail: 'WU 1.5K easy, 5K @ 4:42/km in Z4 (HR 167–179), CD 1K easy', targets: { type: 'quality', distance: '5K', pace: '4:42', zone: 'Z4', hr: '167–179', target: '23:30' } },
+
+      Fri: PULL_FULL,
+      Sat: HYROX('HYROX SIM #1, baseline test', '41:00'),
+      Sun: R('RUN 8K easy long', 'Easy long run', { type: 'easy', distance: '8K', pace: '5:45–6:00' })
+
+    }},
+
+  { num: 2, startDate: '2026-05-11', dates: '11–17 May', label: 'Viva week', phase: 'base',
+    sessions: {
+      Mon: LEGS,
+      Tue: B('BIKE Z2', '95 min + 15 min core'),
+      Wed: S('PUSH', 'Heavy bench + OHP + accessories + shin/core (~95 min), leg-friendly'),
+      Thu: { type: 'run', label: 'RUN 5K Z4 (23:00)', detail: 'WU 1.5K easy, 5K @ 4:36/km in Z4 (HR 167–179), CD 1K easy', targets: { type: 'quality', distance: '5K', pace: '4:36', zone: 'Z4', hr: '167–179', target: '23:00' } },
+
+      Fri: PULL_FULL,
+      Sat: HYROX('HYROX SIM #2', '41:00'),
+      Sun: R('RUN 9K + 4×20s strides', 'Easy long with strides at end', { type: 'easy', distance: '9K', pace: '5:30–6:00', strides: '4×20s strides' })
+
+    }},
+
+  { num: 3, startDate: '2026-05-18', dates: '18–24 May', label: 'Base build (volume up)', phase: 'base',
+    sessions: {
+      Mon: LEGS,
+      Tue: B('BIKE Z2', '90 min + 15 min core'),
+      Wed: S('PUSH', 'Heavy bench + OHP + accessories + shin/core (~95 min), leg-friendly'),
+      Thu: { type: 'run', label: 'RUN 5K Z4 (22:30)', detail: 'WU 1.5K easy, 5K @ 4:30/km in Z4 (HR 167–179), CD 1K easy', targets: { type: 'quality', distance: '5K', pace: '4:30', zone: 'Z4', hr: '167–179', target: '22:30' } },
+
+      Fri: PULL_FULL,
+      Sat: HYROX('HYROX SIM #3', '40:30'),
+      Sun: R('RUN 11K + 6×20s strides', 'Easy long with strides at end', { type: 'easy', distance: '11K', pace: '5:30–6:00', strides: '6×20s strides' })
+
+    }},
+
+  { num: 4, startDate: '2026-05-25', dates: '25–31 May', label: 'Base build', phase: 'base',
+    sessions: {
+      Mon: LEGS, Tue: B('BIKE Z2', '90 min + 15 min core'),
+      Wed: S('PUSH', 'Heavy bench + OHP + accessories + shin/core (~95 min), leg-friendly'),
+      Thu: { type: 'run', label: 'RUN 5K Z4 (22:15)', detail: 'WU 1.5K easy, 5K @ 4:27/km in Z4 (HR 167–179), CD 1K easy', targets: { type: 'quality', distance: '5K', pace: '4:27', zone: 'Z4', hr: '167–179', target: '22:15' } }, Fri: PULL_FULL,
+
+      Sat: HYROX('HYROX SIM #4', '40:00'),
+      Sun: R('RUN 13K + 6×20s strides', 'Easy long with strides at end', { type: 'easy', distance: '13K', pace: '5:30–6:00', strides: '6×20s strides' })
+
+    }},
+
+  { num: 5, startDate: '2026-06-01', dates: '1–7 Jun', label: 'Base build', phase: 'base',
+    sessions: {
+      Mon: LEGS, Tue: B('BIKE Z2', '90 min + 10 min core'),
+      Wed: S('PUSH', 'Heavy bench + OHP + accessories + shin/core (~95 min), leg-friendly'),
+      Thu: { type: 'run', label: 'RUN 5K Z4 (22:00)', detail: 'WU 1.5K easy, 5K @ 4:24/km in Z4 (HR 167–179), CD 1K easy', targets: { type: 'quality', distance: '5K', pace: '4:24', zone: 'Z4', hr: '167–179', target: '22:00' } }, Fri: PULL_FULL,
+
+      Sat: HYROX('HYROX SIM #5', '39:30'),
+      Sun: R('RUN 15K + 6×20s strides', 'Easy long with strides at end', { type: 'easy', distance: '15K', pace: '5:30–6:00', strides: '6×20s strides' })
+
+    }},
+
+  { num: 6, startDate: '2026-06-08', dates: '8–14 Jun', label: 'Base peak', phase: 'base',
+    sessions: {
+      Mon: LEGS, Tue: B('BIKE Z2', '90 min + 10 min core'),
+      Wed: S('PUSH', 'Heavy bench + OHP + accessories + shin/core (~95 min), leg-friendly'),
+      Thu: { type: 'run', label: 'RUN 5K Z4 (21:45)', detail: 'WU 1.5K easy, 5K @ 4:21/km in Z4 (HR 167–179), CD 1K easy', targets: { type: 'quality', distance: '5K', pace: '4:21', zone: 'Z4', hr: '167–179', target: '21:45' } }, Fri: PULL_FULL,
+
+      Sat: HYROX('HYROX SIM #6', '39:00'),
+      Sun: R('RUN 17K + 6×20s strides', 'Easy long with strides at end', { type: 'easy', distance: '17K', pace: '5:30–6:00', strides: '6×20s strides' })
+
+    }},
+
+  { num: 7, startDate: '2026-06-15', dates: '15–21 Jun', label: 'Race-pace primer', phase: 'race',
+    sessions: {
+      Mon: LEGS_LIGHT,
+      Tue: B('BIKE Z2', '90 min + 15 min core'),
+      Wed: S('PUSH maintenance', 'Maintenance only, no heavy load'),
+      Thu: R('RUN 5K easy', 'Easy aerobic only', { type: 'easy', distance: '5K', pace: '5:30–6:00' }),
+      Fri: PULL_FULL,
+      Sat: HYROX('HYROX SIM #7, easy intent', '39:30'),
+      Sun: R('RUN 13K easy', 'Pre-Chippenham easy long', { type: 'easy', distance: '13K', pace: '5:30–6:00' })
+
+    }},
+
+  { num: 8, startDate: '2026-06-22', dates: '22–28 Jun', label: 'CHIPPENHAM 10K', phase: 'race',
+    sessions: {
+      Mon: REST(),
+      Tue: B('BIKE Z2', '35 min very easy + 15 min mobility'),
+      Wed: RACE('Chippenham 10K, 19:30', 'Goal: sub-47 (4:42/km). 1K @ 4:48, 2-5K @ 4:42, 6-8K @ 4:40, 9-10K all out.'),
+      Thu: REST('or 30 min easy bike'),
+      Fri: PULL_MAINT,
+      Sat: B('BIKE Z2', '60 min easy + 15 min core (post-race recovery)'),
+      Sun: R('RUN 14K easy long', 'Recovery long', { type: 'easy', distance: '14K', pace: '5:30–6:00' })
+    }},
+
+  { num: 9, startDate: '2026-06-29', dates: '29 Jun – 5 Jul', label: 'Threshold introduction', phase: 'threshold',
+    sessions: {
+      Mon: LEGS, Tue: B('BIKE Z2 + sweet spot', '60 min Z2 + 20 min Z3-Z4 sweet spot + 10 min CD'),
+      Wed: S('PUSH', 'Heavy bench + OHP + accessories + shin/core (~95 min), leg-friendly'),
+      Thu: { type: 'run', label: 'RUN 5K Z4 (21:45)', detail: 'WU 1.5K easy, 5K @ 4:21/km in Z4 (HR 167–179), CD 1K easy', targets: { type: 'quality', distance: '5K', pace: '4:21', zone: 'Z4', hr: '167–179', target: '21:45' } }, Fri: PULL_FULL,
+
+      Sat: HYROX('HYROX SIM #8', '38:30'),
+      Sun: R('RUN 16K easy long', 'Easy long, post-race rebuild', { type: 'easy', distance: '16K', pace: '5:30–6:00' })
+
+    }},
+
+  { num: 10, startDate: '2026-07-06', dates: '6–12 Jul', label: 'Threshold build', phase: 'threshold',
+    sessions: {
+      Mon: LEGS, Tue: B('BIKE Z2 + sweet spot', '60 min Z2 + 20 min Z3-Z4 sweet spot + 10 min CD'),
+      Wed: S('PUSH', 'Heavy bench + OHP + accessories + shin/core (~95 min), leg-friendly'),
+      Thu: { type: 'run', label: 'RUN 5K Z4 (21:30)', detail: 'WU 1.5K easy, 5K @ 4:18/km in Z4 (HR 167–179), CD 1K easy', targets: { type: 'quality', distance: '5K', pace: '4:18', zone: 'Z4', hr: '167–179', target: '21:30' } }, Fri: PULL_FULL,
+
+      Sat: HYROX('HYROX SIM #9', '38:00'),
+      Sun: R('RUN 18K easy long', 'Easy long', { type: 'easy', distance: '18K', pace: '5:15–5:45' })
+
+    }},
+
+  { num: 11, startDate: '2026-07-13', dates: '13–19 Jul', label: 'Threshold extension · HYROX intro', phase: 'threshold',
+    sessions: {
+      Mon: LEGS, Tue: B('BIKE Z2 + sweet spot', '60 min Z2 + 20 min Z3-Z4 sweet spot + 10 min CD'),
+      Wed: S('PUSH', 'Heavy bench + OHP + accessories + shin/core (~95 min), leg-friendly'),
+      Thu: { type: 'run', label: 'RUN 5K Z4 (21:15)', detail: 'WU 1.5K easy, 5K @ 4:15/km in Z4 (HR 167–179), CD 1K easy', targets: { type: 'quality', distance: '5K', pace: '4:15', zone: 'Z4', hr: '167–179', target: '21:15' } }, Fri: PULL_FULL,
+
+      Sat: HYROX('HYROX SIM #10', '37:30'),
+      Sun: R('RUN 19K easy long', 'Easy long, building toward HM', { type: 'easy', distance: '19K', pace: '5:15–5:45' })
+
+    }},
+
+  { num: 12, startDate: '2026-07-20', dates: '20–26 Jul', label: 'Down week', phase: 'threshold',
+    sessions: {
+      Mon: LEGS_LIGHT, Tue: B('BIKE Z2', '75 min easy + 15 min core (down week)'),
+      Wed: S('PUSH, lighter', 'Lighter weights, shorter session'),
+      Thu: { type: 'run', label: 'RUN 5K Z4 (21:00)', detail: 'WU 1.5K easy, 5K @ 4:12/km in Z4 (HR 167–179), CD 1K easy', targets: { type: 'quality', distance: '5K', pace: '4:12', zone: 'Z4', hr: '167–179', target: '21:00' } }, Fri: PULL_LIGHT,
+
+      Sat: HYROX('HYROX SIM #11, down week', '37:30'),
+      Sun: R('RUN 16K easy long', 'Down week', { type: 'easy', distance: '16K', pace: '5:15–5:45' })
+
+    }},
+
+  { num: 13, startDate: '2026-07-27', dates: '27 Jul – 2 Aug', label: 'Threshold @ 4:25', phase: 'threshold',
+    sessions: {
+      Mon: LEGS, Tue: B('BIKE Z2 + sweet spot', '60 min Z2 + 20 min Z3-Z4 sweet spot + 10 min CD'),
+      Wed: S('PUSH', 'Heavy bench + OHP + accessories + shin/core (~95 min), leg-friendly'),
+      Thu: { type: 'run', label: 'RUN 5K Z4 (20:45)', detail: 'WU 1.5K easy, 5K @ 4:09/km in Z4 (HR 167–179), CD 1K easy', targets: { type: 'quality', distance: '5K', pace: '4:09', zone: 'Z4', hr: '167–179', target: '20:45' } }, Fri: PULL_FULL,
+
+      Sat: HYROX('HYROX SIM #12', '37:00'),
+      Sun: R('RUN 19K easy long', 'Easy long', { type: 'easy', distance: '19K', pace: '5:15–5:45' })
+
+    }},
+
+  { num: 14, startDate: '2026-08-03', dates: '3–9 Aug', label: 'Threshold @ 4:20', phase: 'threshold',
+    sessions: {
+      Mon: LEGS, Tue: B('BIKE Z2 + sweet spot', '60 min Z2 + 20 min Z3-Z4 sweet spot + 10 min CD'),
+      Wed: S('PUSH', 'Heavy bench + OHP + accessories + shin/core (~95 min), leg-friendly'),
+      Thu: { type: 'run', label: 'RUN 5K Z4 (20:30)', detail: 'WU 1.5K easy, 5K @ 4:06/km in Z4 (HR 167–179), CD 1K easy', targets: { type: 'quality', distance: '5K', pace: '4:06', zone: 'Z4', hr: '167–179', target: '20:30' } }, Fri: PULL_FULL,
+
+      Sat: HYROX('HYROX SIM #13', '36:30'),
+      Sun: R('RUN 20K easy long', 'Easy long, half-marathon distance approaching', { type: 'easy', distance: '20K', pace: '5:15–5:45' })
+
+    }},
+
+  { num: 15, startDate: '2026-08-10', dates: '10–16 Aug', label: 'Peak threshold @ 4:15', phase: 'threshold',
+    sessions: {
+      Mon: LEGS, Tue: B('BIKE Z2 + sweet spot', '60 min Z2 + 20 min Z3-Z4 sweet spot + 10 min CD'),
+      Wed: S('PUSH', 'Heavy bench + OHP + accessories + shin/core (~95 min), leg-friendly'),
+      Thu: { type: 'run', label: 'RUN 5K Z4 (20:15)', detail: 'WU 1.5K easy, 5K @ 4:03/km in Z4 (HR 167–179), CD 1K easy', targets: { type: 'quality', distance: '5K', pace: '4:03', zone: 'Z4', hr: '167–179', target: '20:15' } }, Fri: PULL_FULL,
+
+      Sat: HYROX('HYROX SIM #14', '36:00'),
+      Sun: R('RUN 21K easy long (HM)', 'Half-marathon distance, easy effort', { type: 'easy', distance: '21K', pace: '5:15–5:45' })
+
+    }},
+
+  { num: 16, startDate: '2026-08-17', dates: '17–23 Aug', label: 'Down week pre-TT', phase: 'threshold',
+    sessions: {
+      Mon: LEGS_LIGHT, Tue: B('BIKE Z2', '75 min easy + 15 min core (down week)'),
+      Wed: S('PUSH, lighter', 'Lighter weights, shorter session'),
+      Thu: R('RUN 5K easy', 'Easy aerobic only', { type: 'easy', distance: '5K', pace: '5:30–6:00' }), Fri: PULL_LIGHT,
+      Sat: HYROX('HYROX SIM #15, down week', '36:00'),
+      Sun: R('RUN 16K easy long', 'Down week, pre-TT', { type: 'easy', distance: '16K', pace: '5:15–5:45' })
+
+    }},
+
+  { num: 17, startDate: '2026-08-24', dates: '24–30 Aug', label: '5K TT week (sub-20 target)', phase: 'race',
+    sessions: {
+      Mon: REST(),
+      Tue: B('BIKE Z2', '60 min + 15 min mobility'),
+      Wed: { type: 'run', label: 'RUN 3×1km @ 4:10 + PUSH maint', detail: 'Sharpener: WU 2K + 3×1km @ 4:10, 90s jog + CD 2K', targets: { type: 'quality', reps: '3×1km', pace: '4:10', recovery: '90s jog' }, addStrength: 'PUSH maintenance only' },
+      Thu: REST(),
+      Fri: PULL_MAINT,
+      Sat: RACE('5K TIME TRIAL', 'Sub-20 target. WU 2K + 4×100m strides + 4×30s @ TT pace, then go.'),
+      Sun: R('RUN 12K easy', '5K TT recovery', { type: 'easy', distance: '12K', pace: '5:15–5:45' })
+
+    }},
+
+  { num: 18, startDate: '2026-08-31', dates: '31 Aug – 6 Sep', label: 'TT recovery + VO2 reintro', phase: 'vo2',
+    sessions: {
+      Mon: LEGS, Tue: B('BIKE Z2 + sweet spot', '60 min Z2 + 20 min Z3-Z4 sweet spot + 10 min CD'),
+      Wed: S('PUSH', 'Heavy bench + OHP + accessories + shin/core (~95 min), leg-friendly'),
+      Thu: { type: 'run', label: 'RUN 5K Z4 (20:30)', detail: 'WU 1.5K easy, 5K @ 4:06/km in Z4 (HR 167–179), CD 1K easy', targets: { type: 'quality', distance: '5K', pace: '4:06', zone: 'Z4', hr: '167–179', target: '20:30' } }, Fri: PULL_FULL,
+
+      Sat: HYROX('HYROX SIM #16', '35:30'),
+      Sun: R('RUN 18K easy long', 'Easy long', { type: 'easy', distance: '18K', pace: '5:00–5:30' })
+
+    }},
+
+  { num: 19, startDate: '2026-09-07', dates: '7–13 Sep', label: 'Full VO2', phase: 'vo2',
+    sessions: {
+      Mon: LEGS, Tue: B('BIKE Z2 + sweet spot', '60 min Z2 + 20 min Z3-Z4 sweet spot + 10 min CD'),
+      Wed: S('PUSH', 'Heavy bench + OHP + accessories + shin/core (~95 min), leg-friendly'),
+      Thu: { type: 'run', label: 'RUN 5K Z4 (20:15)', detail: 'WU 1.5K easy, 5K @ 4:03/km in Z4 (HR 167–179), CD 1K easy', targets: { type: 'quality', distance: '5K', pace: '4:03', zone: 'Z4', hr: '167–179', target: '20:15' } }, Fri: PULL_FULL,
+
+      Sat: HYROX('HYROX SIM #17', '35:00'),
+      Sun: R('RUN 21K easy long (HM)', 'Half-marathon distance, easy effort', { type: 'easy', distance: '21K', pace: '5:00–5:30' })
+
+    }},
+
+  { num: 20, startDate: '2026-09-14', dates: '14–20 Sep', label: '10K TUNE-UP, VETO POINT 2', phase: 'race',
+    sessions: {
+      Mon: REST(),
+      Tue: B('BIKE Z2', '60 min + 15 min mobility'),
+      Wed: { type: 'run', label: 'RUN 3×1km @ 4:00 + PUSH maint', detail: 'Race-pace primer: WU 2K + 3×1km @ 4:00, 90s jog + CD 2K', targets: { type: 'quality', reps: '3×1km', pace: '4:00', recovery: '90s jog' }, addStrength: 'PUSH maintenance only' },
+      Thu: REST(),
+      Fri: PULL_MAINT,
+      Sat: RACE('10K TUNE-UP RACE', 'VETO POINT 2, Goal: ≤43:00 (4:18/km)'),
+      Sun: B('BIKE Z2', '30 min easy spin (active recovery, optional)')
+    }},
+
+  { num: 21, startDate: '2026-09-21', dates: '21–27 Sep', label: 'VO2 build', phase: 'vo2',
+    sessions: {
+      Mon: LEGS, Tue: B('BIKE Z2', '90 min + 20 min sweet spot Z3-Z4'),
+      Wed: S('PUSH', 'Heavy bench + OHP + accessories + shin/core (~95 min), leg-friendly'),
+      Thu: { type: 'run', label: 'RUN 5K Z4', detail: '5K @ 4:00/km in Z4 (HR 167–179). WU 1.5K + 5K Z4 + CD 1K.', targets: { type: 'quality', distance: '5K', pace: '4:00', zone: 'Z4', hr: '167–179' } },
+      Fri: PULL_FULL,
+      Sat: HYROX('HYROX SIM #18', '35:30'),
+      Sun: R('RUN 22K easy long', 'Half-marathon-plus distance', { type: 'easy', distance: '22K', pace: '5:00–5:30' })
+
+    }},
+
+  { num: 22, startDate: '2026-09-28', dates: '28 Sep – 4 Oct', label: 'Sharpening', phase: 'sharp',
+    sessions: {
+      Mon: LEGS, Tue: B('BIKE Z2', '90 min + 15 min core'),
+      Wed: S('PUSH', 'Heavy bench + OHP + accessories + shin/core (~95 min), leg-friendly'),
+      Thu: { type: 'run', label: 'RUN 5K Z4 (19:45)', detail: 'WU 1.5K easy, 5K @ 3:57/km in Z4 (HR 167–179), CD 1K easy', targets: { type: 'quality', distance: '5K', pace: '3:57', zone: 'Z4', hr: '167–179', target: '19:45' } }, Fri: PULL_FULL,
+
+      Sat: HYROX('HYROX SIM #19', '34:30'),
+      Sun: R('RUN 21K easy long (HM)', 'Half-marathon distance', { type: 'easy', distance: '21K', pace: '5:00–5:30' })
+
+    }},
+
+  { num: 23, startDate: '2026-10-05', dates: '5–11 Oct', label: 'VO2 + goal-pace', phase: 'sharp',
+    sessions: {
+      Mon: LEGS, Tue: B('BIKE Z2', '90 min + 10 min core'),
+      Wed: S('PUSH', 'Heavy bench + OHP + accessories + shin/core (~95 min), leg-friendly'),
+      Thu: { type: 'run', label: 'RUN 5K Z4 (19:30)', detail: 'WU 1.5K easy, 5K @ 3:54/km in Z4 (HR 167–179), CD 1K easy', targets: { type: 'quality', distance: '5K', pace: '3:54', zone: 'Z4', hr: '167–179', target: '19:30' } }, Fri: PULL_FULL,
+
+      Sat: HYROX('HYROX SIM #20', '34:00'),
+      Sun: R('RUN 22K easy long (peak)', 'Peak distance', { type: 'easy', distance: '22K', pace: '5:00–5:30' })
+
+    }},
+
+  { num: 24, startDate: '2026-10-12', dates: '12–18 Oct', label: 'Peak week', phase: 'sharp',
+    sessions: {
+      Mon: LEGS, Tue: B('BIKE Z2', '90 min + 10 min core'),
+      Wed: S('PUSH', 'Heavy bench + OHP + accessories + shin/core (~95 min), leg-friendly'),
+      Thu: { type: 'run', label: 'RUN 5K Z4 (19:30)', detail: 'WU 1.5K easy, 5K @ 3:54/km in Z4 (HR 167–179), CD 1K easy', targets: { type: 'quality', distance: '5K', pace: '3:54', zone: 'Z4', hr: '167–179', target: '19:30' } }, Fri: PULL_FULL,
+
+      Sat: HYROX('HYROX SIM #21, peak', '33:30'),
+      Sun: R('RUN 18K easy long', 'Easy long, taper begins', { type: 'easy', distance: '18K', pace: '5:00–5:30' })
+
+    }},
+
+  { num: 25, startDate: '2026-10-19', dates: '19–25 Oct', label: 'Taper begins', phase: 'sharp',
+    sessions: {
+      Mon: LEGS_LIGHT, Tue: B('BIKE Z2', '90 min + 15 min core'),
+      Wed: S('PUSH, lighter', 'Lighter weights, shorter session'),
+      Thu: R('RUN 5K easy', 'Easy aerobic only', { type: 'easy', distance: '5K', pace: '5:30–6:00' }), Fri: PULL_LIGHT,
+      Sat: HYROX('HYROX SIM #22, taper opener, controlled', '35:00'),
+      Sun: R('RUN 14K easy', 'Pre-race taper', { type: 'easy', distance: '14K', pace: '5:00–5:30' })
+
+    }},
+
+  { num: 26, startDate: '2026-10-26', dates: '26 Oct – 1 Nov', label: 'HYROX RACE WEEK', phase: 'race',
+    sessions: {
+      Mon: REST('or 30 min walk'),
+      Tue: B('BIKE Z2', '40 min very easy spin + 15 min mobility'),
+      Wed: { type: 'run', label: 'RUN sharpener 5×200m', detail: 'Pre-race sharpener: WU 2K + 5×200m @ 5K pace, 90s walk + CD 1K', targets: { type: 'quality', reps: '5×200m', pace: '4:00', recovery: '90s walk' } },
+      Thu: RACE('HYROX RACE, 29 Oct', 'Target 1:15. Pacing: 8 runs at goal pace +5s, controlled stations, walk transitions sharp.'),
+      Fri: REST('Full recovery, walking only'),
+      Sat: REST('Optional 20 min very easy walk'),
+      Sun: REST('Walking only — post-race recovery')
+
+    }},
+
+  { num: 27, startDate: '2026-11-02', dates: '2–8 Nov', label: 'Post-HYROX recovery', phase: 'race',
+    sessions: {
+      Mon: REST('Walk only'),
+      Tue: B('BIKE Z2', '40 min very easy + mobility'),
+      Wed: R('RUN 6K easy', 'Easy aerobic only', { type: 'easy', distance: '6K', pace: '5:30–6:00' }),
+      Thu: B('BIKE Z2', '60 min easy + 15 min mobility'),
+      Fri: S('Strength, light full body', '60 min: bodyweight + light DB, no heavy compound'),
+      Sat: R('RUN 8K easy', 'Easy long', { type: 'easy', distance: '8K', pace: '5:15–5:45' }),
+      Sun: R('RUN 10K easy', 'Recovery long', { type: 'easy', distance: '10K', pace: '5:30–6:00' })
+
+    }}
+];
+
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+// Build flat list of all sessions with dates
+function buildSessionList() {
+  const list = [];
+  PLAN.forEach(week => {
+    const start = new Date(week.startDate);
+    DAYS.forEach((day, i) => {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      const session = week.sessions[day] || (week.mon && day === 'Mon' ? week.mon : null);
+      if (!session) return; // skip days with no entry (shouldn't happen now)
+      const dateStr = d.toISOString().slice(0,10);
+      list.push({
+        date: dateStr,
+        day,
+        weekNum: week.num,
+        weekLabel: week.label,
+        weekDates: week.dates,
+        phase: week.phase,
+        session
+      });
+    });
+  });
+  return list;
+}
+
+const SESSION_LIST = buildSessionList();
+const SESSION_BY_DATE = {};
+SESSION_LIST.forEach(s => { SESSION_BY_DATE[s.date] = s; });
+
+// ============ STORAGE ============
+const STORAGE_KEY = 'tracker_v1_logs';
+
+function loadLogs() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
+}
+
+function saveLogs(logs) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(logs)); }
+  catch (e) { console.error('Save failed', e); }
+}
+
+let logs = loadLogs();
+
+function getLog(date) {
+  return logs[date] || {};
+}
+
+function setLog(date, patch) {
+  logs[date] = { ...getLog(date), ...patch };
+  saveLogs(logs);
+}
+
+// ============ OVERRIDES (PLAN EDITING) ============
+const OVERRIDES_KEY = 'tracker_v1_overrides';
+
+function loadOverrides() {
+  try {
+    const raw = localStorage.getItem(OVERRIDES_KEY);
+    return raw ? JSON.parse(raw) : { sessions: {}, weeks: {}, hyroxFormat: null, targets: null, goalRace: null };
+  } catch { return { sessions: {}, weeks: {}, hyroxFormat: null, targets: null, goalRace: null }; }
+}
+
+function saveOverrides() {
+  try { localStorage.setItem(OVERRIDES_KEY, JSON.stringify(overrides)); }
+  catch (e) { console.error('Save overrides failed', e); }
+}
+
+let overrides = loadOverrides();
+// Ensure structure exists
+if (!overrides.sessions) overrides.sessions = {};
+if (!overrides.weeks) overrides.weeks = {};
+
+// Edit mode toggle
+let editMode = false;
+
+// Resolver: get the effective session for a date (override wins over default)
+function resolveSession(date) {
+  if (overrides.sessions[date] !== undefined) {
+    return overrides.sessions[date]; // null = explicitly deleted
+  }
+  return SESSION_BY_DATE[date] ? SESSION_BY_DATE[date].session : null;
+}
+
+// Resolver: get the effective week metadata
+function resolveWeek(num) {
+  const original = PLAN.find(w => w.num === num);
+  if (!original) return null;
+  if (overrides.weeks[num]) {
+    return { ...original, ...overrides.weeks[num] };
+  }
+  return original;
+}
+
+// Default HYROX format (used when no override)
+const DEFAULT_HYROX_STATIONS = [
+  { name: '1 · RUN', detail: '500 m', cls: 'warmup' },
+  { name: '2 · SKI ERG', detail: '500 m', cls: '' },
+  { name: '3 · SLED PUSH', detail: '25 m · 200 kg (Pro)', cls: 'heavy' },
+  { name: '4 · SLED PULL', detail: '25 m · 152 kg (Pro)', cls: 'heavy' },
+  { name: '5 · BURPEE BROAD JUMPS', detail: '40 m', cls: 'power' },
+  { name: '6 · ROW', detail: '500 m', cls: '' },
+  { name: '7 · FARMER\'S CARRY', detail: '100 m · 2 × 32 kg', cls: '' },
+  { name: '8 · SANDBAG LUNGES', detail: '50 m · 30 kg (Pro)', cls: 'shin' },
+  { name: '9 · WALL BALLS', detail: '50 reps · 9 kg (Pro)', cls: 'power' },
+  { name: '10 · RUN FINISH', detail: '500 m', cls: 'cooldown' }
+];
+
+function resolveHyroxStations() {
+  return overrides.hyroxFormat || DEFAULT_HYROX_STATIONS;
+}
+
+// Default targets (matches Stats tab)
+const DEFAULT_TARGETS = [
+  { date: '9 May · Sat', test: 'HYROX baseline', target: '~41:00 (50%)', color: 'gold' },
+  { date: '24 Jun · Wed', test: 'Chippenham 10K', target: '≤47:00', color: 'green' },
+  { date: '29 Aug · Sat', test: '5K Time Trial', target: '≤20:00', color: 'green' },
+  { date: '19 Sep · Sat', test: '10K Tune-up', target: '≤43:00', color: 'green' },
+  { date: '15 Aug · Sun', test: 'First half-marathon distance', target: '21K easy', color: 'amber' },
+  { date: '17 Oct · Sat', test: 'Peak HYROX sim', target: '≤33:30 (50%)', color: 'gold' },
+  { date: '29 Oct · Thu', test: 'HYROX RACE', target: '1:15', color: 'gold', isGoal: true }
+];
+
+function resolveTargets() {
+  return overrides.targets || DEFAULT_TARGETS;
+}
+
+// Default goal race
+const DEFAULT_GOAL_RACE = {
+  brand: '1:15',
+  subtitle: 'HYROX · 29 Oct',
+  countdownDate: '2026-10-29'
+};
+
+function resolveGoalRace() {
+  return overrides.goalRace || DEFAULT_GOAL_RACE;
+}
+
+// Override setters
+function setSessionOverride(date, session) {
+  overrides.sessions[date] = session; // null = deleted
+  saveOverrides();
+}
+
+function clearSessionOverride(date) {
+  delete overrides.sessions[date];
+  saveOverrides();
+}
+
+function setWeekOverride(num, patch) {
+  overrides.weeks[num] = { ...(overrides.weeks[num] || {}), ...patch };
+  saveOverrides();
+}
+
+function clearWeekOverride(num) {
+  delete overrides.weeks[num];
+  saveOverrides();
+}
+
+function setHyroxFormat(stations) {
+  overrides.hyroxFormat = stations;
+  saveOverrides();
+}
+
+function setTargets(targets) {
+  overrides.targets = targets;
+  saveOverrides();
+}
+
+function setGoalRace(goal) {
+  overrides.goalRace = goal;
+  saveOverrides();
+}
+
+function resetAllOverrides() {
+  overrides = { sessions: {}, weeks: {}, hyroxFormat: null, targets: null, goalRace: null };
+  saveOverrides();
+}
+
+// Resolve an entry (week meta + session) for a given date, applying overrides
+function resolveEntry(date) {
+  const baseEntry = SESSION_BY_DATE[date];
+  if (!baseEntry) return null;
+  const week = resolveWeek(baseEntry.weekNum);
+  const session = resolveSession(date);
+  if (session === null && overrides.sessions[date] === null) return null; // explicitly deleted
+  return {
+    ...baseEntry,
+    session: session || baseEntry.session,
+    weekLabel: week ? week.label : baseEntry.weekLabel,
+    weekDates: week ? week.dates : baseEntry.weekDates,
+    phase: week ? week.phase : baseEntry.phase
+  };
+}
+
+// ============ TIME / DATE ============
+function todayStr() {
+  // Pin to plan timeline: if real date is before plan start, use plan start.
+  // If after plan end, use plan end.
+  const t = new Date();
+  const ts = t.toISOString().slice(0,10);
+  const start = SESSION_LIST[0].date;
+  const end = SESSION_LIST[SESSION_LIST.length-1].date;
+  if (ts < start) return start;
+  if (ts > end) return end;
+  return ts;
+}
+
+function formatDate(iso, opts = {}) {
+  const d = new Date(iso + 'T00:00:00');
+  const opt = { weekday: 'long', day: 'numeric', month: 'long', ...opts };
+  return d.toLocaleDateString('en-GB', opt);
+}
+
+function formatShortDate(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
+
+function daysBetween(a, b) {
+  return Math.round((new Date(b) - new Date(a)) / (1000*60*60*24));
+}
+
+// ============ RENDERING ============
+function typeMeta(type) {
+  return {
+    run: { color: 'amber', label: 'RUN' },
+    bike: { color: 'teal', label: 'BIKE' },
+    strength: { color: 'purple', label: 'STRENGTH' },
+    race: { color: 'red', label: 'RACE' },
+    rest: { color: 'faint', label: 'REST' },
+    hyrox: { color: 'gold', label: 'HYROX SIM' }
+  }[type] || { color: 'blue', label: type.toUpperCase() };
+}
+
+// Render the Today screen
+function renderToday() {
+  const date = todayStr();
+  const entry = resolveEntry(date);
+
+  document.getElementById('todayDate').textContent = formatDate(date).toUpperCase();
+
+  if (!entry) {
+    document.getElementById('todayWeekInfo').textContent = '';
+    if (editMode) {
+      document.getElementById('todayCard').innerHTML =
+        '<div class="empty">No session scheduled.</div>' +
+        `<button class="add-row-btn" onclick="openAddSessionModal('${date}')">+ Add session for today</button>`;
+    } else {
+      document.getElementById('todayCard').innerHTML = '<div class="empty">No session scheduled.</div>';
+    }
+    return;
+  }
+
+  document.getElementById('todayWeekInfo').textContent = `Week ${entry.weekNum} · ${entry.weekDates} · ${entry.weekLabel}`;
+
+  let cardHtml = renderSessionCard(entry);
+  if (editMode) {
+    cardHtml += `<button class="add-row-btn" onclick="openEditSessionModal('${date}')" style="margin-top:8px;">✎ Edit today's session</button>`;
+  }
+  document.getElementById('todayCard').innerHTML = cardHtml;
+  attachSessionCardHandlers(date);
+}
+
+function renderSessionCard(entry) {
+  const log = getLog(entry.date);
+  const session = entry.session;
+  const meta = typeMeta(session.type);
+  const completed = log.completed;
+  const targets = session.targets;
+
+  let logFormHtml = '';
+  if (session.type === 'run') {
+    logFormHtml = renderRunForm(entry.date, log, targets);
+  } else if (session.type === 'bike') {
+    logFormHtml = renderBikeForm(entry.date, log);
+  } else if (session.type === 'strength') {
+    logFormHtml = renderStrengthForm(entry.date, log, session.label);
+  } else if (session.type === 'race') {
+    logFormHtml = renderRaceForm(entry.date, log);
+  } else if (session.type === 'hyrox') {
+    logFormHtml = renderHyroxForm(entry.date, log, session.target);
+  }
+
+  // Strength exercise breakdown, for strength days OR for run days with addStrength
+  let exercisesHtml = '';
+  if (session.type === 'strength') {
+    exercisesHtml = renderStrengthBlocks(session.label, entry.date);
+  } else if (session.type === 'hyrox') {
+    exercisesHtml = renderHyroxBlocks(entry.date, session.target);
+  }
+
+  let addStrengthHtml = '';
+  if (session.addStrength) {
+    // Detect if it's a Push add-on (which it is on every Wed in this plan)
+    const pushBlocks = renderStrengthBlocks('PUSH ' + session.addStrength, entry.date, true);
+    addStrengthHtml = `<div class="card" style="margin-top:8px;padding:12px 14px;background:rgba(155,124,232,0.06);border-color:rgba(155,124,232,0.3);"><div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--purple);font-weight:700;margin-bottom:4px;">+ Strength (within 2h cap)</div><div style="font-size:13px;margin-bottom:8px;">${session.addStrength}</div>${pushBlocks}</div>`;
+  }
+
+  return `
+    <div class="card session-card type-${session.type} ${completed ? 'done' : ''}">
+      <div class="session-type">${meta.label}</div>
+      <div class="session-title">${session.label}</div>
+      <div class="session-detail">${session.detail || ''}</div>
+      ${targets && targets.pace ? `<div class="target-line">Target: ${targets.pace}/km${targets.distance ? ` · ${targets.distance}` : ''}${targets.reps ? ` · ${targets.reps}` : ''}</div>` : ''}
+      ${exercisesHtml}
+      <button class="complete-btn ${completed ? 'done' : ''}" data-action="toggle" data-date="${entry.date}">
+        <div class="checkbox"><svg viewBox="0 0 24 24"><polyline points="5 12 10 17 19 7"/></svg></div>
+        <span style="flex:1;text-align:left;">${completed ? 'Completed' : 'Mark complete'}</span>
+      </button>
+    </div>
+    ${addStrengthHtml}
+    ${logFormHtml}
+  `;
+}
+
+// Build collapsible strength exercise blocks based on session label
+function renderStrengthBlocks(label, date, compact = false) {
+  const isLegs = /LEGS/i.test(label);
+  const isPush = /PUSH/i.test(label);
+  const isPull = /PULL/i.test(label);
+  if (!isLegs && !isPush && !isPull) return '';
+
+  const isLight = /light|reduce|3×5/i.test(label);
+  const isMaint = /maintenance|maint|mobility only/i.test(label);
+
+  let blocks = [];
+
+  if (isLegs) {
+    if (isMaint) {
+      blocks = [
+        { name: 'WARM-UP · 10 min', cls: 'warmup', items: ['5 min easy bike spin','Dynamic mobility'] },
+        { name: 'COMPOUND · 35 min', cls: 'heavy', items: ['Back squat 3 × 5','Romanian deadlift 3 × 8'] },
+        { name: 'COOL-DOWN · 15 min', cls: 'cooldown', items: ['Foam roll calves, quads','Static stretch hip flexors, hamstrings'] }
+      ];
+    } else {
+      blocks = [
+        { name: 'WARM-UP · 15 min', cls: 'warmup', items: [
+          '5 min easy bike spin',
+          'Dynamic mobility: leg swings, hip openers, ankle circles',
+          "World's greatest stretch",
+          'Glute bridges 2×15, banded clamshells 2×15'
+        ]},
+        { name: 'HEAVY COMPOUND · 40 min', cls: 'heavy', items: [
+          isLight ? 'Back squat 3 × 5' : 'Back squat 4 × 6 (heavy, ~85% effort)',
+          isLight ? 'Romanian deadlift 3 × 5' : 'Romanian deadlift 4 × 8',
+          isLight ? 'Bulgarian split squat 2 × 8 each' : 'Bulgarian split squat 3 × 8 each leg',
+          'Rest 90–120s between sets'
+        ]},
+        { name: 'ACCESSORY · 25 min', cls: '', items: [
+          'Walking lunges (DB) 3 × 12 each',
+          'Single-leg calf raise (3-sec eccentric) 4 × 10 each',
+          'Tibialis raises (heavy) 3 × 15 each',
+          'Hip thrusts 3 × 10',
+          'Hanging leg raises 3 × 10',
+          'Pallof press 3 × 10 each side',
+          'Suitcase carry 2 × 30s each side'
+        ]}
+      ];
+      if (!isLight) {
+        // De-loaded for shin protection: low-impact power instead of plyometrics
+        blocks.push({ name: 'LOW-IMPACT POWER · 12 min', cls: 'power', items: [
+          'Trap bar deadlift 3 × 3 (explosive concentric, controlled eccentric)',
+          'KB swings 3 × 12 (heavy, hip-hinge focus)',
+          'Med ball slams 3 × 8',
+          { text: 'No jumping work, protects shin while still building rate of force development', warn: false }
+        ]});
+      }
+      blocks.push({ name: 'COOL-DOWN · 15 min', cls: 'cooldown', items: [
+        'Foam roll calves, quads, glutes, IT band',
+        'Static stretch hip flexors, hamstrings, calves'
+      ]});
+    }
+  }
+
+  if (isPush) {
+    if (isMaint) {
+      blocks = [
+        { name: 'WARM-UP · 5 min', cls: 'warmup', items: ['Shoulder mobility','Band pull-aparts'] },
+        { name: 'MAINTENANCE · 20 min', cls: '', items: ['Bench press 2 × 10 (light)','Push-ups 2 × AMRAP','Plank 2 × 45s'] },
+        { name: 'SHIN + CORE · 10 min', cls: 'shin', items: [
+          'Tibialis raises 2 × 20',
+          'Heel walks 2 × 30s',
+          'Dead bugs 2 × 10'
+        ]}
+      ];
+    } else {
+      blocks = [
+        { name: 'WARM-UP · 12 min', cls: 'warmup', items: [
+          '5 min easy bike spin or row',
+          'Band pull-aparts 2 × 15, arm circles',
+          'Scapular push-ups 2 × 10',
+          'Band dislocates 2 × 10',
+          'Empty bar bench 2 × 10'
+        ]},
+        { name: 'HEAVY COMPOUND · 35 min', cls: 'heavy', items: [
+          isLight ? 'Bench press 3 × 5 (lighter)' : 'Bench press 5 × 5 (heavy, push for PR)',
+          isLight ? 'OHP 3 × 5 (lighter)' : 'Overhead press 4 × 6 (strict, heavy)',
+          'Incline DB press 4 × 8 (heavy)',
+          'Rest 2–3 min between heavy sets'
+        ]},
+        { name: 'ACCESSORY · 25 min', cls: '', items: [
+          'Lateral raises 4 × 12',
+          'Dumbbell pullover 3 × 10',
+          'Tricep dips 3 × 8 (weighted if possible)',
+          'Tricep rope pushdown 3 × 12',
+          'Overhead tricep extension 3 × 12',
+          'Cable chest fly 3 × 12'
+        ]},
+        { name: 'SHIN + CORE · 12 min', cls: 'shin', items: [
+          'Tibialis raises 3 × 20',
+          'Heel walks 3 × 30s (toes up, walk forward)',
+          'Soleus calf raise (bent knee) 3 × 15',
+          'Pallof press 3 × 10 each side',
+          'Hollow body hold 3 × 30s',
+          'Side plank 2 × 30s each side'
+        ]}
+      ];
+      blocks.push({ name: 'COOL-DOWN · 6 min', cls: 'cooldown', items: [
+        'Pec doorway stretch',
+        'Sleeper stretch',
+        'Tricep overhead stretch',
+        'Lat stretch hanging'
+      ]});
+    }
+  }
+
+  if (isPull) {
+    if (isMaint) {
+      blocks = [
+        { name: 'MOBILITY · 25 min', cls: '', items: [
+          'Cat-cow, thread the needle',
+          'Face pulls 2 × 15 (light)',
+          'Foam roll lats, mid-back',
+          'Static stretch hamstrings, child\'s pose'
+        ]},
+        { name: 'SHIN + CORE · 10 min', cls: 'shin', items: [
+          'Tibialis raises 2 × 20',
+          'Heel walks 2 × 30s',
+          'Dead bugs 2 × 10'
+        ]}
+      ];
+    } else {
+      blocks = [
+        { name: 'WARM-UP · 10 min', cls: 'warmup', items: [
+          '5 min easy bike spin',
+          'Cat-cow, thread the needle',
+          'Band dislocates, scapular pull-ups'
+        ]},
+        { name: 'HEAVY COMPOUND · 40 min', cls: 'heavy', items: [
+          isLight ? 'Pull-ups 4 × 5' : 'Pull-ups (or assisted) 5 × 6–8',
+          isLight ? 'Barbell row 3 × 8 (lighter)' : 'Barbell or Pendlay row 4 × 8',
+          'Single-arm DB row 3 × 10 each',
+          isLight ? 'Deadlift 2 × 5 (technique)' : 'Deadlift (technique focus) 3 × 5'
+        ]},
+        { name: 'ACCESSORY · 30 min', cls: '', items: [
+          'Face pulls 4 × 15',
+          'Reverse fly 3 × 12',
+          'Bicep curls 3 × 10',
+          'Hammer curls 3 × 10',
+          'Cable straight-arm pulldown 3 × 12',
+          'Shrugs 3 × 12'
+        ]},
+        { name: 'POSTERIOR CHAIN · 10 min', cls: '', items: [
+          'Single-leg glute bridges 3 × 12 each',
+          'Single-leg RDL (light DB) 3 × 8 each',
+          'Reverse hyper or back extension 3 × 12'
+        ]},
+        { name: 'SHIN + CORE · 12 min', cls: 'shin', items: [
+          'Tibialis raises 3 × 20',
+          'Single-leg calf raise (slow eccentric) 3 × 12 each',
+          'Side plank with leg lift 3 × 10 each',
+          'Dead bugs 3 × 10',
+          'Bird dog 3 × 10 each',
+          'Pallof press 2 × 10 each side'
+        ]},
+        { name: 'COOL-DOWN · 8 min', cls: 'cooldown', items: [
+          'Foam roll lats, mid-back, hamstrings',
+          'Hamstring stretch, hip flexor, child\'s pose'
+        ]}
+      ];
+    }
+  }
+
+  // Render blocks. Compact mode used for the addStrength embed on Wed.
+  const id = 'ex-' + date.replace(/-/g,'') + (compact ? '-add' : '');
+  const totalCount = blocks.reduce((s,b) => s + b.items.length, 0);
+  const blocksHtml = blocks.map(b => {
+    const items = b.items.map(item => {
+      const text = typeof item === 'string' ? item : item.text;
+      const warn = typeof item === 'object' && item.warn;
+      const skipStyle = b.skip ? ' style="color:var(--text-faint);font-style:italic;"' : '';
+      const warnClass = warn ? ' class="warn"' : '';
+      return `<li${warnClass}${skipStyle}>${text}</li>`;
+    }).join('');
+    return `
+      <div class="ex-block ${b.cls}">
+        <div class="ex-block-name">${b.name}${b.anchor ? ' <span style="color:var(--red);">★</span>' : ''}</div>
+        <ul class="ex-list">${items}</ul>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div class="ex-toggle-wrap">
+      <button class="ex-toggle" data-target="${id}">
+        <span>View exercises (${totalCount})</span>
+        <svg viewBox="0 0 24 24" width="14" height="14"><polyline points="6 9 12 15 18 9" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+      </button>
+      <div class="ex-content" id="${id}">
+        ${blocksHtml}
+      </div>
+    </div>
+  `;
+}
+
+function renderRunForm(date, log, targets) {
+  const r = log.run || {};
+  return `
+    <div class="card log-section">
+      <div class="log-title">Log run</div>
+      <div class="log-grid">
+        <div class="log-field">
+          <label>Distance (km)</label>
+          <input type="text" inputmode="decimal" data-log="run.distance" data-date="${date}" value="${r.distance || ''}" placeholder="${targets?.distance ? targets.distance.replace('K','') : ''}">
+        </div>
+        <div class="log-field">
+          <label>Avg pace (m:ss)</label>
+          <input type="text" inputmode="text" data-log="run.pace" data-date="${date}" value="${r.pace || ''}" placeholder="${targets?.pace || '4:30'}">
+        </div>
+        <div class="log-field">
+          <label>Avg HR</label>
+          <input type="text" inputmode="numeric" data-log="run.hr" data-date="${date}" value="${r.hr || ''}" placeholder="—">
+        </div>
+        <div class="log-field">
+          <label>RPE 1–10</label>
+          <input type="text" inputmode="numeric" data-log="run.rpe" data-date="${date}" value="${r.rpe || ''}" placeholder="—">
+        </div>
+      </div>
+      ${targets && targets.reps ? `
+        <div class="log-field" style="margin-top:10px;">
+          <label>Rep splits (one per line)</label>
+          <textarea data-log="run.splits" data-date="${date}" placeholder="e.g. 4:28&#10;4:30&#10;4:32...">${r.splits || ''}</textarea>
+        </div>
+      ` : ''}
+      <div class="log-field" style="margin-top:10px;">
+        <label>Notes</label>
+        <textarea data-log="run.notes" data-date="${date}" placeholder="Felt strong / shin clear / weather / etc">${r.notes || ''}</textarea>
+      </div>
+    </div>
+  `;
+}
+
+function renderBikeForm(date, log) {
+  const b = log.bike || {};
+  return `
+    <div class="card log-section">
+      <div class="log-title">Log bike</div>
+      <div class="log-grid">
+        <div class="log-field">
+          <label>Duration (min)</label>
+          <input type="text" inputmode="numeric" data-log="bike.duration" data-date="${date}" value="${b.duration || ''}" placeholder="—">
+        </div>
+        <div class="log-field">
+          <label>Avg HR</label>
+          <input type="text" inputmode="numeric" data-log="bike.hr" data-date="${date}" value="${b.hr || ''}" placeholder="—">
+        </div>
+        <div class="log-field">
+          <label>Avg power (W)</label>
+          <input type="text" inputmode="numeric" data-log="bike.power" data-date="${date}" value="${b.power || ''}" placeholder="—">
+        </div>
+        <div class="log-field">
+          <label>RPE 1–10</label>
+          <input type="text" inputmode="numeric" data-log="bike.rpe" data-date="${date}" value="${b.rpe || ''}" placeholder="—">
+        </div>
+      </div>
+      <div class="log-field" style="margin-top:10px;">
+        <label>Notes</label>
+        <textarea data-log="bike.notes" data-date="${date}" placeholder="Zone breakdown / quality block paces / how it felt">${b.notes || ''}</textarea>
+      </div>
+    </div>
+  `;
+}
+
+function renderStrengthForm(date, log, label) {
+  const s = log.strength || {};
+  const isLegs = /LEGS/i.test(label);
+  const isPush = /PUSH/i.test(label);
+  const isPull = /PULL/i.test(label);
+
+  let liftFields = '';
+  if (isLegs) {
+    liftFields = `
+      <div class="log-field"><label>Squat top set (kg × reps)</label><input type="text" data-log="strength.squat" data-date="${date}" value="${s.squat || ''}" placeholder="e.g. 80×6"></div>
+      <div class="log-field"><label>RDL top set</label><input type="text" data-log="strength.rdl" data-date="${date}" value="${s.rdl || ''}" placeholder="e.g. 70×8"></div>
+      <div class="log-field"><label>Bulgarian (kg)</label><input type="text" data-log="strength.bulgarian" data-date="${date}" value="${s.bulgarian || ''}" placeholder="e.g. 20×8"></div>
+    `;
+  } else if (isPush) {
+    liftFields = `
+      <div class="log-field"><label>Bench top set</label><input type="text" data-log="strength.bench" data-date="${date}" value="${s.bench || ''}" placeholder="e.g. 60×8"></div>
+      <div class="log-field"><label>OHP top set</label><input type="text" data-log="strength.ohp" data-date="${date}" value="${s.ohp || ''}" placeholder="e.g. 40×6"></div>
+      <div class="log-field"><label>Incline DB (each)</label><input type="text" data-log="strength.incline" data-date="${date}" value="${s.incline || ''}" placeholder="e.g. 22×10"></div>
+    `;
+  } else if (isPull) {
+    liftFields = `
+      <div class="log-field"><label>Pull-ups (top set)</label><input type="text" data-log="strength.pullups" data-date="${date}" value="${s.pullups || ''}" placeholder="e.g. BW×8"></div>
+      <div class="log-field"><label>Row top set</label><input type="text" data-log="strength.row" data-date="${date}" value="${s.row || ''}" placeholder="e.g. 70×8"></div>
+      <div class="log-field"><label>Deadlift top set</label><input type="text" data-log="strength.deadlift" data-date="${date}" value="${s.deadlift || ''}" placeholder="e.g. 100×5"></div>
+    `;
+  }
+
+  return `
+    <div class="card log-section">
+      <div class="log-title">Log strength</div>
+      <div class="log-grid">${liftFields}</div>
+      <div class="log-field" style="margin-top:10px;">
+        <label>RPE 1–10</label>
+        <input type="text" inputmode="numeric" data-log="strength.rpe" data-date="${date}" value="${s.rpe || ''}" placeholder="—">
+      </div>
+      <div class="log-field" style="margin-top:10px;">
+        <label>Notes</label>
+        <textarea data-log="strength.notes" data-date="${date}" placeholder="Form / fatigue / accessory weights">${s.notes || ''}</textarea>
+      </div>
+    </div>
+  `;
+}
+
+function renderRaceForm(date, log) {
+  const r = log.race || {};
+  return `
+    <div class="card log-section" style="border:1px solid rgba(226,85,85,0.4);background:rgba(226,85,85,0.05);">
+      <div class="log-title" style="color:var(--red);">Log race result</div>
+      <div class="log-grid">
+        <div class="log-field"><label>Finish time</label><input type="text" data-log="race.time" data-date="${date}" value="${r.time || ''}" placeholder="e.g. 41:25"></div>
+        <div class="log-field"><label>Position</label><input type="text" data-log="race.pos" data-date="${date}" value="${r.pos || ''}" placeholder="—"></div>
+        <div class="log-field"><label>5K split</label><input type="text" data-log="race.split5k" data-date="${date}" value="${r.split5k || ''}" placeholder="e.g. 20:55"></div>
+        <div class="log-field"><label>Avg HR</label><input type="text" inputmode="numeric" data-log="race.hr" data-date="${date}" value="${r.hr || ''}" placeholder="—"></div>
+      </div>
+      <div class="log-field" style="margin-top:10px;">
+        <label>Notes</label>
+        <textarea data-log="race.notes" data-date="${date}" placeholder="Conditions, pacing, how it played out">${r.notes || ''}</textarea>
+      </div>
+    </div>
+  `;
+}
+
+function renderHyroxForm(date, log, target) {
+  const h = log.hyrox || {};
+  return `
+    <div class="card log-section" style="border:1px solid rgba(245,192,74,0.4);background:rgba(245,192,74,0.05);">
+      <div class="log-title" style="color:var(--gold);">Log HYROX sim · target ${target || '—'}</div>
+      <div class="log-grid">
+        <div class="log-field"><label>Total time</label><input type="text" data-log="hyrox.time" data-date="${date}" value="${h.time || ''}" placeholder="e.g. 32:15"></div>
+        <div class="log-field"><label>Avg HR</label><input type="text" inputmode="numeric" data-log="hyrox.hr" data-date="${date}" value="${h.hr || ''}" placeholder="—"></div>
+        <div class="log-field"><label>RPE 1–10</label><input type="text" inputmode="numeric" data-log="hyrox.rpe" data-date="${date}" value="${h.rpe || ''}" placeholder="—"></div>
+        <div class="log-field"><label>vs target</label><input type="text" data-log="hyrox.vs" data-date="${date}" value="${h.vs || ''}" placeholder="+0:30 / -0:15"></div>
+      </div>
+      <div class="log-field" style="margin-top:10px;">
+        <label>Station splits (one per line)</label>
+        <textarea data-log="hyrox.splits" data-date="${date}" placeholder="Run 1: 2:30&#10;Ski: 2:15&#10;Sled push: 1:45&#10;..." style="min-height:120px;">${h.splits || ''}</textarea>
+      </div>
+      <div class="log-field" style="margin-top:10px;">
+        <label>Notes</label>
+        <textarea data-log="hyrox.notes" data-date="${date}" placeholder="What worked, where I lost time, transitions, fueling">${h.notes || ''}</textarea>
+      </div>
+    </div>
+  `;
+}
+
+function renderHyroxBlocks(date, target) {
+  const stations = resolveHyroxStations();
+  const id = 'hx-' + date.replace(/-/g,'');
+  const blocksHtml = stations.map(s => `
+    <div class="ex-block ${s.cls || ''}">
+      <div class="ex-block-name">${s.name}</div>
+      <ul class="ex-list"><li>${s.detail}</li></ul>
+    </div>
+  `).join('');
+  return `
+    <div class="ex-toggle-wrap">
+      <button class="ex-toggle" data-target="${id}">
+        <span>View ${stations.length} stations · target ${target || '—'}</span>
+        <svg viewBox="0 0 24 24" width="14" height="14"><polyline points="6 9 12 15 18 9" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+      </button>
+      <div class="ex-content" id="${id}">
+        ${blocksHtml}
+        <div style="font-size:11px;color:var(--text-faint);padding:8px 4px 0;line-height:1.5;">
+          50% sim · transitions count toward time · race intent on every rep
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function attachSessionCardHandlers(date) {
+  document.querySelectorAll('[data-action="toggle"]').forEach(btn => {
+    btn.addEventListener('click', () => toggleComplete(btn.dataset.date));
+  });
+  document.querySelectorAll('[data-log]').forEach(input => {
+    input.addEventListener('input', handleLogInput);
+  });
+  document.querySelectorAll('.ex-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = document.getElementById(btn.dataset.target);
+      const isOpen = target.classList.toggle('open');
+      btn.classList.toggle('open', isOpen);
+      btn.querySelector('span').textContent = isOpen
+        ? 'Hide exercises'
+        : btn.querySelector('span').textContent.replace('Hide exercises', 'View exercises');
+      // Restore the original "View exercises (N)" label when closing
+      if (!isOpen && !btn.querySelector('span').textContent.startsWith('View')) {
+        // Recompute count from the items in the target
+        const count = target.querySelectorAll('.ex-list li').length;
+        btn.querySelector('span').textContent = `View exercises (${count})`;
+      }
+    });
+  });
+}
+
+let saveTimer;
+function handleLogInput(e) {
+  const path = e.target.dataset.log;
+  const date = e.target.dataset.date;
+  const value = e.target.value;
+  const log = getLog(date);
+  const [section, field] = path.split('.');
+  log[section] = { ...(log[section] || {}), [field]: value };
+  logs[date] = log;
+  // Debounce save
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    saveLogs(logs);
+    showToast('Saved');
+    if (currentScreen === 'stats') renderStats();
+  }, 500);
+}
+
+function toggleComplete(date) {
+  const log = getLog(date);
+  log.completed = !log.completed;
+  setLog(date, log);
+  showToast(log.completed ? 'Marked complete' : 'Unmarked');
+  refreshAll();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove('show'), 1500);
+}
+
+// ============ WEEK SCREEN ============
+let currentWeekIdx = 0;
+
+function setCurrentWeekToToday() {
+  const today = todayStr();
+  const idx = PLAN.findIndex(w => {
+    const start = new Date(w.startDate);
+    const end = new Date(start); end.setDate(start.getDate() + 6);
+    const t = new Date(today);
+    return t >= start && t <= end;
+  });
+  if (idx >= 0) currentWeekIdx = idx;
+}
+
+function renderWeek() {
+  const baseWeek = PLAN[currentWeekIdx];
+  const week = resolveWeek(baseWeek.num);
+  document.getElementById('weekTitle').textContent = `Week ${week.num}`;
+  document.getElementById('weekDates').textContent = week.dates;
+
+  const phase = PHASES[week.phase];
+  const editBtnHtml = editMode
+    ? `<button class="edit-mini" data-edit-week="${week.num}">edit week</button>`
+    : '';
+  document.getElementById('weekPhaseBadge').innerHTML =
+    `<div class="phase-badge phase-${week.phase}">${phase.label} · ${week.label}</div>${editBtnHtml}`;
+
+  document.getElementById('weekPrev').disabled = currentWeekIdx === 0;
+  document.getElementById('weekNext').disabled = currentWeekIdx === PLAN.length - 1;
+
+  const today = todayStr();
+  const start = new Date(week.startDate);
+
+  let html = '<div class="card" style="padding:4px 12px;">';
+  DAYS.forEach((day, i) => {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    const dateStr = d.toISOString().slice(0,10);
+    // Check for explicit override (including null = deleted)
+    const hasOverride = overrides.sessions[dateStr] !== undefined;
+    const session = hasOverride
+      ? overrides.sessions[dateStr]
+      : (baseWeek.sessions[day] || (baseWeek.mon && day === 'Mon' ? baseWeek.mon : null));
+    const isToday = dateStr === today;
+
+    if (!session) {
+      // Empty day, show "+" in edit mode
+      if (editMode) {
+        html += `
+          <div class="day-row empty-day" data-date="${dateStr}" data-add="1">
+            <div class="day-pill">
+              <div class="day-name">${day}</div>
+              <div class="day-num">${d.getDate()}</div>
+            </div>
+            <div class="day-content" style="color:var(--text-faint);font-size:13px;font-style:italic;">+ Add session</div>
+          </div>
+        `;
+      }
+      return;
+    }
+
+    const log = getLog(dateStr);
+    const meta = typeMeta(session.type);
+
+    html += `
+      <div class="day-row ${isToday ? 'today' : ''}" data-date="${dateStr}">
+        <div class="day-pill">
+          <div class="day-name">${day}</div>
+          <div class="day-num">${d.getDate()}</div>
+        </div>
+        <div class="day-content">
+          <div class="day-type-label" style="color:var(--${meta.color === 'faint' ? 'text-faint' : meta.color});">${meta.label}</div>
+          <div class="day-title">${session.label}</div>
+          <div class="day-detail">${session.detail || ''}</div>
+        </div>
+        <div class="day-status">
+          ${editMode ? '<div class="edit-pencil">✎</div>' : (log.completed ? '<div class="check"><svg viewBox="0 0 24 24"><polyline points="5 12 10 17 19 7"/></svg></div>' : '')}
+        </div>
+      </div>
+    `;
+  });
+  html += '</div>';
+  document.getElementById('weekDays').innerHTML = html;
+
+  document.querySelectorAll('.day-row').forEach(r => {
+    r.addEventListener('click', () => {
+      if (editMode) {
+        if (r.dataset.add) openAddSessionModal(r.dataset.date);
+        else openEditSessionModal(r.dataset.date);
+      } else {
+        openModal(r.dataset.date);
+      }
+    });
+  });
+  // Wire week edit
+  const ewb = document.querySelector('[data-edit-week]');
+  if (ewb) ewb.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openEditWeekModal(parseInt(ewb.dataset.editWeek));
+  });
+}
+
+document.getElementById('weekPrev').addEventListener('click', () => {
+  if (currentWeekIdx > 0) { currentWeekIdx--; renderWeek(); }
+});
+document.getElementById('weekNext').addEventListener('click', () => {
+  if (currentWeekIdx < PLAN.length - 1) { currentWeekIdx++; renderWeek(); }
+});
+
+// ============ MODAL ============
+function openModal(date) {
+  const entry = resolveEntry(date);
+  if (!entry) return;
+  document.getElementById('modalDate').textContent = formatDate(date).toUpperCase();
+  document.getElementById('modalWeekInfo').textContent = `Week ${entry.weekNum} · ${entry.weekLabel}`;
+  document.getElementById('modalBody').innerHTML = renderSessionCard(entry);
+  document.getElementById('modalBg').classList.add('show');
+  document.getElementById('modal').classList.add('show');
+  // Re-attach handlers within modal
+  setTimeout(() => attachSessionCardHandlers(date), 50);
+}
+function closeModal() {
+  document.getElementById('modalBg').classList.remove('show');
+  document.getElementById('modal').classList.remove('show');
+  // Refresh week view in case completion changed
+  renderWeek();
+  if (currentScreen === 'today') renderToday();
+  if (currentScreen === 'stats') renderStats();
+}
+document.getElementById('modalBg').addEventListener('click', closeModal);
+document.getElementById('modalClose').addEventListener('click', closeModal);
+
+// ============ PLAN SCREEN ============
+const PHASE_ORDER = [
+  { key: 'all', label: 'All' },
+  { key: 'base', label: 'Base' },
+  { key: 'threshold', label: 'Threshold' },
+  { key: 'vo2', label: 'VO2' },
+  { key: 'sharp', label: 'Sharpening' },
+  { key: 'race', label: 'Race weeks' }
+];
+let activePhase = 'all';
+
+function renderPhaseChips() {
+  const wrap = document.getElementById('phaseChips');
+  wrap.innerHTML = PHASE_ORDER.map(p =>
+    `<button class="phase-chip ${activePhase === p.key ? 'active' : ''}" data-phase="${p.key}">${p.label}</button>`
+  ).join('');
+  wrap.querySelectorAll('.phase-chip').forEach(c => {
+    c.addEventListener('click', () => { activePhase = c.dataset.phase; renderPlan(); });
+  });
+}
+
+function renderPlan() {
+  renderPhaseChips();
+  const filtered = PLAN.filter(w => activePhase === 'all' || w.phase === activePhase);
+  const today = todayStr();
+  let html = '';
+  filtered.forEach(baseWeek => {
+    const week = resolveWeek(baseWeek.num);
+    const phase = PHASES[week.phase];
+    const start = new Date(week.startDate);
+    let weekHasContent = '';
+    DAYS.forEach((day, i) => {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      const dateStr = d.toISOString().slice(0,10);
+      const hasOverride = overrides.sessions[dateStr] !== undefined;
+      const session = hasOverride
+        ? overrides.sessions[dateStr]
+        : (baseWeek.sessions[day] || (baseWeek.mon && day === 'Mon' ? baseWeek.mon : null));
+      if (!session) return;
+      const log = getLog(dateStr);
+      const meta = typeMeta(session.type);
+      const isToday = dateStr === today;
+      weekHasContent += `
+        <div class="day-row ${isToday ? 'today' : ''}" data-date="${dateStr}">
+          <div class="day-pill">
+            <div class="day-name">${day}</div>
+            <div class="day-num">${d.getDate()}</div>
+          </div>
+          <div class="day-content">
+            <div class="day-type-label" style="color:var(--${meta.color === 'faint' ? 'text-faint' : meta.color});">${meta.label}</div>
+            <div class="day-title">${session.label}</div>
+            <div class="day-detail">${session.detail || ''}</div>
+          </div>
+          <div class="day-status">
+            ${log.completed ? '<div class="check"><svg viewBox="0 0 24 24"><polyline points="5 12 10 17 19 7"/></svg></div>' : ''}
+          </div>
+        </div>
+      `;
+    });
+    html += `
+      <div class="card" style="padding:14px 16px;">
+        <div class="phase-badge phase-${week.phase}">${phase.label}</div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;">
+          <div class="week-title">Week ${week.num}</div>
+          <div class="week-subtitle">${week.dates}</div>
+        </div>
+        <div style="font-size:13px;color:var(--text-dim);margin-bottom:8px;">${week.label}</div>
+        <div style="margin: 0 -16px;">${weekHasContent}</div>
+      </div>
+    `;
+  });
+  document.getElementById('planContent').innerHTML = html;
+  document.querySelectorAll('#planContent .day-row').forEach(r => {
+    r.addEventListener('click', () => openModal(r.dataset.date));
+  });
+}
+
+// ============ STATS ============
+function parsePace(str) {
+  if (!str) return null;
+  const m = String(str).match(/^(\d+):(\d{1,2})/);
+  if (!m) return null;
+  return parseInt(m[1]) + parseInt(m[2])/60;
+}
+
+function renderStats() {
+  let complete = 0, runs = 0, bikes = 0, total = 0;
+  SESSION_LIST.forEach(s => {
+    const log = getLog(s.date);
+    total++;
+    if (log.completed) complete++;
+    if (log.run && (log.run.pace || log.run.distance)) runs++;
+    if (log.bike && (log.bike.duration || log.bike.hr)) bikes++;
+  });
+
+  document.getElementById('statComplete').textContent = complete;
+  const pct = total ? Math.round(complete/total*100) : 0;
+  document.getElementById('statPct').textContent = pct + '%';
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('statRuns').textContent = runs;
+  document.getElementById('statBikes').textContent = bikes;
+
+  // Render Key Targets dynamically
+  const targets = resolveTargets();
+  const targetsHtml = targets.map(t => {
+    const goldStyle = t.isGoal ? ' style="color:var(--gold);"' : '';
+    return `
+      <div class="veto-row">
+        <div class="veto-info">
+          <div class="veto-date"${goldStyle}>${escHtml(t.date)}</div>
+          <div class="veto-test">${t.isGoal ? '<strong style="color:var(--gold);">'+escHtml(t.test)+'</strong>' : escHtml(t.test)}</div>
+        </div>
+        <div class="veto-target mono"${goldStyle}>${escHtml(t.target)}</div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('targetsCard').innerHTML = targetsHtml || '<div class="empty" style="padding:20px 0;">No targets set</div>';
+
+  // Edit Actions card (only visible in edit mode)
+  const editActions = document.getElementById('editActionsCard');
+  if (editMode) {
+    editActions.innerHTML = `
+      <div class="section-title" style="color:var(--gold);">Edit Mode Actions</div>
+      <div class="card">
+        <button class="complete-btn" onclick="openEditTargets()" style="margin-bottom:8px;">
+          <span style="flex:1;text-align:center;">✎ Edit Key Targets</span>
+        </button>
+        <button class="complete-btn" onclick="openEditHyroxFormat()" style="margin-bottom:8px;">
+          <span style="flex:1;text-align:center;">✎ Edit HYROX Sim Format</span>
+        </button>
+        <button class="complete-btn" onclick="openEditGoalRace()" style="margin-bottom:8px;">
+          <span style="flex:1;text-align:center;">✎ Edit Goal Race / Header</span>
+        </button>
+        <button class="complete-btn" onclick="exportOverrides()" style="margin-bottom:8px;">
+          <span style="flex:1;text-align:center;">⬇ Export full backup (logs + edits)</span>
+        </button>
+        <button class="complete-btn" onclick="document.getElementById('importFile').click()" style="margin-bottom:8px;">
+          <span style="flex:1;text-align:center;">⬆ Import backup</span>
+        </button>
+        <input type="file" id="importFile" accept=".json" style="display:none;" onchange="(function(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>importOverrides(r.result);r.readAsText(f);})(event)">
+        <button class="complete-btn" onclick="if(confirm('Reset all plan edits? Your training logs will be retained. This cannot be undone.')){resetAllOverrides();applyGoalRace();refreshAll();showToast('All plan edits cleared');}" style="color:var(--red);border-color:rgba(226,85,85,0.3);">
+          <span style="flex:1;text-align:center;">↺ Reset all plan edits</span>
+        </button>
+      </div>
+    `;
+  } else {
+    editActions.innerHTML = '';
+  }
+
+  // Pace chart: any logged run pace, plotted by date
+  const points = [];
+  SESSION_LIST.forEach(s => {
+    const log = getLog(s.date);
+    if (s.session.type === 'run' && log.run && log.run.pace) {
+      const p = parsePace(log.run.pace);
+      if (p) points.push({ date: s.date, pace: p, type: s.session.targets?.type || 'easy' });
+    }
+  });
+
+  drawChart(points);
+
+  // Recovery check, restore values + wire updates
+  const rcKey = 'tracker_v1_recovery';
+  const rcStored = (() => { try { return JSON.parse(localStorage.getItem(rcKey) || '{}'); } catch { return {}; } })();
+  const rhrEl = document.getElementById('rcRhr');
+  const sleepEl = document.getElementById('rcSleep');
+  const shinEl = document.getElementById('rcShin');
+  const legsEl = document.getElementById('rcLegs');
+  if (rhrEl) {
+    rhrEl.value = rcStored.rhr || '';
+    sleepEl.value = rcStored.sleep || '';
+    shinEl.value = rcStored.shin || 'clear';
+    legsEl.value = rcStored.legs || 'fresh';
+    const updateVerdict = () => {
+      const rhr = parseFloat(rhrEl.value) || 0;
+      const sleep = parseFloat(sleepEl.value) || 0;
+      const shin = shinEl.value;
+      const legs = legsEl.value;
+      // Save
+      localStorage.setItem(rcKey, JSON.stringify({ rhr: rhrEl.value, sleep: sleepEl.value, shin, legs }));
+      // Verdict
+      let level = 'green';
+      const flags = [];
+      if (shin === 'pain') { level = 'red'; flags.push('Shin PAIN, stop running, see physio'); }
+      else if (shin === 'niggle') { if (level !== 'red') level = 'amber'; flags.push('Shin niggle, drop next run, swap for bike Z2'); }
+      if (rhr > 0 && rhr >= 60) { level = 'red'; flags.push(`RHR ${rhr} (baseline ~54), body is overcooked`); }
+      else if (rhr > 0 && rhr >= 58) { if (level !== 'red') level = 'amber'; flags.push(`RHR ${rhr} elevated, cut Block 4 across strength sessions this week`); }
+      if (sleep > 0 && sleep < 6) { level = 'red'; flags.push(`Sleep ${sleep}h, downgrade Wed PUSH to maintenance, easy 5K Thu, push Sun long shorter`); }
+      else if (sleep > 0 && sleep < 6.5) { if (level !== 'red') level = 'amber'; flags.push(`Sleep ${sleep}h marginal, be honest about effort today`); }
+      if (legs === 'heavy') { if (level !== 'red') level = 'amber'; flags.push('Legs heavy, convert today to easy or bike, never force quality on dead legs'); }
+      const colors = { green: 'var(--green)', amber: 'var(--amber)', red: 'var(--red)' };
+      const messages = {
+        green: '✓ Cleared to train as planned',
+        amber: '⚠ Yellow flag, modify today',
+        red: '✗ Red flag, REST or major modification'
+      };
+      const verdictEl = document.getElementById('recoveryVerdict');
+      verdictEl.innerHTML = `
+        <div style="padding:12px 14px;border-radius:10px;background:${level==='green'?'rgba(110,200,140,0.08)':level==='amber'?'rgba(245,192,74,0.08)':'rgba(226,85,85,0.1)'};border:1px solid ${colors[level]};">
+          <div style="font-weight:700;color:${colors[level]};font-size:14px;margin-bottom:6px;">${messages[level]}</div>
+          ${flags.length ? '<ul style="margin:0;padding-left:18px;font-size:13px;color:var(--text);line-height:1.5;">' + flags.map(f => `<li style="margin:4px 0;">${f}</li>`).join('') + '</ul>' : ''}
+        </div>
+      `;
+    };
+    [rhrEl, sleepEl, shinEl, legsEl].forEach(el => el.addEventListener('input', updateVerdict));
+    [shinEl, legsEl].forEach(el => el.addEventListener('change', updateVerdict));
+    updateVerdict();
+  }
+
+  // Strength PRs
+  const prs = computePRs();
+  const prDiv = document.getElementById('prCard');
+  if (Object.keys(prs).length === 0) {
+    prDiv.innerHTML = '<div class="empty" style="padding:20px 0;">Log strength sessions to track PRs</div>';
+  } else {
+    prDiv.innerHTML = Object.entries(prs).map(([lift, val]) =>
+      `<div class="veto-row"><div class="veto-info"><div class="veto-test">${lift}</div></div><div class="veto-target mono">${val}</div></div>`
+    ).join('');
+  }
+}
+
+function computePRs() {
+  const lifts = ['squat','rdl','bulgarian','bench','ohp','incline','pullups','row','deadlift'];
+  const labels = { squat:'Squat', rdl:'RDL', bulgarian:'Bulgarian', bench:'Bench', ohp:'OHP', incline:'Incline DB', pullups:'Pull-ups', row:'Row', deadlift:'Deadlift' };
+  const prs = {};
+  SESSION_LIST.forEach(s => {
+    const log = getLog(s.date);
+    if (!log.strength) return;
+    lifts.forEach(l => {
+      const v = log.strength[l];
+      if (!v) return;
+      // Parse weight from "80×6" or "80x6" or "80kg×6"
+      const m = String(v).match(/(\d+(?:\.\d+)?)/);
+      if (!m) return;
+      const w = parseFloat(m[1]);
+      const cur = prs[labels[l]];
+      if (!cur || w > parseFloat(cur.match(/(\d+(?:\.\d+)?)/)[1])) prs[labels[l]] = v;
+    });
+  });
+  return prs;
+}
+
+function drawChart(points) {
+  const c = document.getElementById('paceChart');
+  if (points.length < 2) {
+    c.innerHTML = '<div class="empty" style="padding:30px 0;font-size:12px;">Need 2+ logged runs</div>';
+    return;
+  }
+  // SVG line chart
+  const W = 320, H = 160, P = { l: 36, r: 12, t: 12, b: 24 };
+  const minP = Math.min(...points.map(p => p.pace)) - 0.1;
+  const maxP = Math.max(...points.map(p => p.pace)) + 0.1;
+  const dates = points.map(p => new Date(p.date).getTime());
+  const minD = Math.min(...dates), maxD = Math.max(...dates);
+  const x = t => P.l + (W - P.l - P.r) * (maxD === minD ? 0.5 : (t - minD)/(maxD - minD));
+  const y = p => P.t + (H - P.t - P.b) * (1 - (maxP === minP ? 0.5 : (p - minP)/(maxP - minP)));
+
+  const path = points.map((p,i) => `${i===0?'M':'L'} ${x(new Date(p.date).getTime()).toFixed(1)} ${y(p.pace).toFixed(1)}`).join(' ');
+  const dots = points.map(p => {
+    const color = p.type === 'quality' ? 'var(--amber)' : p.type === 'progression' ? 'var(--purple)' : 'var(--green)';
+    return `<circle cx="${x(new Date(p.date).getTime()).toFixed(1)}" cy="${y(p.pace).toFixed(1)}" r="4" fill="${color}" stroke="var(--bg-card)" stroke-width="2"/>`;
+  }).join('');
+
+  // Y-axis labels
+  const yLabels = [minP, (minP+maxP)/2, maxP].map(p => {
+    const m = Math.floor(p), s = Math.round((p - m) * 60);
+    return { p, label: `${m}:${String(s).padStart(2,'0')}` };
+  });
+  const yTicks = yLabels.map(l => `<text x="${P.l - 6}" y="${(y(l.p) + 4).toFixed(1)}" font-family="JetBrains Mono" font-size="10" fill="var(--text-faint)" text-anchor="end">${l.label}</text>`).join('');
+
+  c.innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+      <line x1="${P.l}" y1="${P.t}" x2="${P.l}" y2="${H-P.b}" stroke="var(--line)" stroke-width="1"/>
+      <line x1="${P.l}" y1="${H-P.b}" x2="${W-P.r}" y2="${H-P.b}" stroke="var(--line)" stroke-width="1"/>
+      ${yTicks}
+      <path d="${path}" fill="none" stroke="var(--gold)" stroke-width="2"/>
+      ${dots}
+    </svg>
+  `;
+}
+
+// ============ DATA ACTIONS ============
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const data = JSON.stringify({ exportedAt: new Date().toISOString(), logs }, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `training_logs_${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showToast('Exported');
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (!confirm('Reset all logs? This will erase all completion marks and logged data. Cannot be undone.')) return;
+  logs = {};
+  saveLogs(logs);
+  refreshAll();
+  showToast('All data reset');
+});
+
+// ============ TAB NAV ============
+let currentScreen = 'today';
+function showScreen(name) {
+  currentScreen = name;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(`screen-${name}`).classList.add('active');
+  document.querySelector(`.tab[data-screen="${name}"]`).classList.add('active');
+  if (name === 'week') { setCurrentWeekToToday(); renderWeek(); }
+  if (name === 'plan') renderPlan();
+  if (name === 'stats') renderStats();
+  if (name === 'today') renderToday();
+  if (name === 'info') renderInfo();
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => showScreen(tab.dataset.screen));
+});
+
+// ============ EDIT MODE ============
+function toggleEditMode() {
+  editMode = !editMode;
+  document.body.classList.toggle('edit-mode', editMode);
+  document.getElementById('editToggle').classList.toggle('active', editMode);
+  refreshAll();
+  showToast(editMode ? 'Edit mode enabled' : 'Edit mode disabled');
+}
+
+document.getElementById('editToggle').addEventListener('click', toggleEditMode);
+
+// Reusable modal opener for edit forms
+function openEditModal(title, contentHtml, onAttach) {
+  document.getElementById('modalDate').textContent = title.toUpperCase();
+  document.getElementById('modalWeekInfo').textContent = '';
+  document.getElementById('modalBody').innerHTML = contentHtml;
+  document.getElementById('modalBg').classList.add('show');
+  document.getElementById('modal').classList.add('show');
+  if (onAttach) setTimeout(onAttach, 50);
+}
+
+// --- Edit a single session ---
+function openEditSessionModal(date) {
+  const session = resolveSession(date) || (SESSION_BY_DATE[date] && SESSION_BY_DATE[date].session) || { type: 'rest', label: 'REST', detail: '' };
+  const isHyrox = session.type === 'hyrox';
+  const targets = session.targets || {};
+
+  const title = `Edit · ${formatDate(date)}`;
+  const html = `
+    <div class="edit-form">
+      <div class="edit-section-title">Session</div>
+      <div class="edit-form-grid">
+        <div>
+          <label>Type</label>
+          <select id="ef-type">
+            <option value="run" ${session.type==='run'?'selected':''}>Run</option>
+            <option value="bike" ${session.type==='bike'?'selected':''}>Bike</option>
+            <option value="strength" ${session.type==='strength'?'selected':''}>Strength</option>
+            <option value="hyrox" ${session.type==='hyrox'?'selected':''}>HYROX Sim</option>
+            <option value="race" ${session.type==='race'?'selected':''}>Race</option>
+            <option value="rest" ${session.type==='rest'?'selected':''}>Rest</option>
+          </select>
+        </div>
+        <div>
+          <label>Title</label>
+          <input type="text" id="ef-label" value="${escAttr(session.label || '')}" placeholder="e.g. RUN 8K easy">
+        </div>
+        <div>
+          <label>Detail / description</label>
+          <textarea id="ef-detail" placeholder="Session detail">${escHtml(session.detail || '')}</textarea>
+        </div>
+        ${isHyrox ? `
+        <div>
+          <label>HYROX target time</label>
+          <input type="text" id="ef-target" value="${escAttr(session.target || '')}" placeholder="e.g. 35:00">
+        </div>
+        ` : ''}
+        <div class="edit-section-title">Targets (run/quality)</div>
+        <div class="edit-form-row">
+          <div>
+            <label>Pace (min/km)</label>
+            <input type="text" id="ef-pace" value="${escAttr(targets.pace || '')}" placeholder="e.g. 4:30">
+          </div>
+          <div>
+            <label>Distance / Reps</label>
+            <input type="text" id="ef-distreps" value="${escAttr(targets.distance || targets.reps || '')}" placeholder="e.g. 8K or 5×1km">
+          </div>
+        </div>
+        <div>
+          <label>Strength add-on (e.g. PUSH)</label>
+          <input type="text" id="ef-addstr" value="${escAttr(session.addStrength || '')}" placeholder="leave blank for none">
+        </div>
+      </div>
+      <div class="edit-actions">
+        <button class="save" id="ef-save">Save</button>
+        <button class="delete" id="ef-delete">Delete session</button>
+      </div>
+      ${overrides.sessions[date] !== undefined ? '<button class="add-row-btn" id="ef-reset" style="margin-top:8px;color:var(--text-dim);border-color:var(--line);background:var(--bg-elev);">Reset to original</button>' : ''}
+    </div>
+  `;
+
+  openEditModal(title, html, () => {
+    document.getElementById('ef-save').addEventListener('click', () => {
+      const type = document.getElementById('ef-type').value;
+      const label = document.getElementById('ef-label').value.trim() || (type === 'rest' ? 'REST' : 'Session');
+      const detail = document.getElementById('ef-detail').value.trim();
+      const pace = document.getElementById('ef-pace').value.trim();
+      const distreps = document.getElementById('ef-distreps').value.trim();
+      const addstr = document.getElementById('ef-addstr').value.trim();
+
+      const newSession = { type, label, detail };
+      if (type === 'hyrox') {
+        newSession.target = document.getElementById('ef-target').value.trim();
+      }
+      if (pace || distreps) {
+        newSession.targets = {};
+        if (pace) newSession.targets.pace = pace;
+        if (distreps) {
+          // Heuristic: if it has 'x' or '×' it's reps, else distance
+          if (/[x×]/i.test(distreps)) newSession.targets.reps = distreps;
+          else newSession.targets.distance = distreps;
+        }
+      }
+      if (addstr) newSession.addStrength = addstr;
+
+      setSessionOverride(date, newSession);
+      closeModal();
+      showToast('Session updated');
+      refreshAll();
+    });
+
+    document.getElementById('ef-delete').addEventListener('click', () => {
+      if (!confirm('Remove this session? The day will be left empty.')) return;
+      setSessionOverride(date, null);
+      closeModal();
+      showToast('Session removed');
+      refreshAll();
+    });
+
+    const resetBtn = document.getElementById('ef-reset');
+    if (resetBtn) resetBtn.addEventListener('click', () => {
+      clearSessionOverride(date);
+      closeModal();
+      showToast('Restored to original plan');
+      refreshAll();
+    });
+  });
+}
+
+function openAddSessionModal(date) {
+  // Same form but blank
+  const session = { type: 'run', label: '', detail: '' };
+  const title = `Add · ${formatDate(date)}`;
+  const html = `
+    <div class="edit-form">
+      <div class="edit-section-title">New session</div>
+      <div class="edit-form-grid">
+        <div>
+          <label>Type</label>
+          <select id="ef-type">
+            <option value="run">Run</option>
+            <option value="bike">Bike</option>
+            <option value="strength">Strength</option>
+            <option value="hyrox">HYROX Sim</option>
+            <option value="race">Race</option>
+            <option value="rest">Rest</option>
+          </select>
+        </div>
+        <div>
+          <label>Title</label>
+          <input type="text" id="ef-label" value="" placeholder="e.g. RUN 5K easy">
+        </div>
+        <div>
+          <label>Detail / description</label>
+          <textarea id="ef-detail" placeholder="Session detail"></textarea>
+        </div>
+        <div>
+          <label>HYROX target time (if HYROX)</label>
+          <input type="text" id="ef-target" value="" placeholder="e.g. 35:00">
+        </div>
+        <div class="edit-form-row">
+          <div>
+            <label>Pace (min/km)</label>
+            <input type="text" id="ef-pace" value="" placeholder="e.g. 4:30">
+          </div>
+          <div>
+            <label>Distance / Reps</label>
+            <input type="text" id="ef-distreps" value="" placeholder="e.g. 8K or 5×1km">
+          </div>
+        </div>
+        <div>
+          <label>Strength add-on</label>
+          <input type="text" id="ef-addstr" value="" placeholder="leave blank for none">
+        </div>
+      </div>
+      <div class="edit-actions">
+        <button class="save" id="ef-save">Add session</button>
+      </div>
+    </div>
+  `;
+  openEditModal(title, html, () => {
+    document.getElementById('ef-save').addEventListener('click', () => {
+      const type = document.getElementById('ef-type').value;
+      const label = document.getElementById('ef-label').value.trim() || (type === 'rest' ? 'REST' : 'Session');
+      const detail = document.getElementById('ef-detail').value.trim();
+      const target = document.getElementById('ef-target').value.trim();
+      const pace = document.getElementById('ef-pace').value.trim();
+      const distreps = document.getElementById('ef-distreps').value.trim();
+      const addstr = document.getElementById('ef-addstr').value.trim();
+      const newSession = { type, label, detail };
+      if (type === 'hyrox' && target) newSession.target = target;
+      if (pace || distreps) {
+        newSession.targets = {};
+        if (pace) newSession.targets.pace = pace;
+        if (distreps) {
+          if (/[x×]/i.test(distreps)) newSession.targets.reps = distreps;
+          else newSession.targets.distance = distreps;
+        }
+      }
+      if (addstr) newSession.addStrength = addstr;
+      setSessionOverride(date, newSession);
+      closeModal();
+      showToast('Session added to plan');
+      refreshAll();
+    });
+  });
+}
+
+// --- Edit week metadata ---
+function openEditWeekModal(num) {
+  const week = resolveWeek(num);
+  const title = `Edit · Week ${num}`;
+  const html = `
+    <div class="edit-form">
+      <div class="edit-section-title">Week ${num} metadata</div>
+      <div class="edit-form-grid">
+        <div>
+          <label>Label</label>
+          <input type="text" id="wf-label" value="${escAttr(week.label)}">
+        </div>
+        <div>
+          <label>Phase</label>
+          <select id="wf-phase">
+            <option value="base" ${week.phase==='base'?'selected':''}>Base</option>
+            <option value="threshold" ${week.phase==='threshold'?'selected':''}>Threshold</option>
+            <option value="vo2" ${week.phase==='vo2'?'selected':''}>VO2</option>
+            <option value="sharp" ${week.phase==='sharp'?'selected':''}>Sharpening</option>
+            <option value="race" ${week.phase==='race'?'selected':''}>Race</option>
+          </select>
+        </div>
+        <div>
+          <label>Date range (display)</label>
+          <input type="text" id="wf-dates" value="${escAttr(week.dates)}">
+        </div>
+      </div>
+      <div class="edit-actions">
+        <button class="save" id="wf-save">Save</button>
+        ${overrides.weeks[num] ? '<button class="delete" id="wf-reset">Reset to original</button>' : ''}
+      </div>
+    </div>
+  `;
+  openEditModal(title, html, () => {
+    document.getElementById('wf-save').addEventListener('click', () => {
+      setWeekOverride(num, {
+        label: document.getElementById('wf-label').value.trim(),
+        phase: document.getElementById('wf-phase').value,
+        dates: document.getElementById('wf-dates').value.trim()
+      });
+      closeModal();
+      showToast('Week settings updated');
+      refreshAll();
+    });
+    const r = document.getElementById('wf-reset');
+    if (r) r.addEventListener('click', () => {
+      clearWeekOverride(num);
+      closeModal();
+      showToast('Restored to original plan');
+      refreshAll();
+    });
+  });
+}
+
+// --- Edit HYROX format ---
+function openEditHyroxFormat() {
+  const stations = JSON.parse(JSON.stringify(resolveHyroxStations())); // deep clone for editing
+  const renderRows = () => stations.map((s, i) => `
+    <div class="station-edit-row" data-i="${i}">
+      <input type="text" data-f="name" value="${escAttr(s.name)}" placeholder="Name">
+      <input type="text" data-f="detail" value="${escAttr(s.detail)}" placeholder="Detail">
+      <select data-f="cls">
+        <option value="" ${!s.cls?'selected':''}>plain</option>
+        <option value="warmup" ${s.cls==='warmup'?'selected':''}>warmup</option>
+        <option value="heavy" ${s.cls==='heavy'?'selected':''}>heavy</option>
+        <option value="power" ${s.cls==='power'?'selected':''}>power</option>
+        <option value="shin" ${s.cls==='shin'?'selected':''}>shin</option>
+        <option value="cooldown" ${s.cls==='cooldown'?'selected':''}>cooldown</option>
+      </select>
+      <button class="icon-btn" data-action="del">×</button>
+    </div>
+  `).join('');
+
+  const html = `
+    <div class="edit-form">
+      <div class="edit-section-title">HYROX Sim Format</div>
+      <p style="font-size:12px;color:var(--text-dim);margin-bottom:12px;">Changes apply to ALL Saturday HYROX sessions.</p>
+      <div id="stationList">${renderRows()}</div>
+      <button class="add-row-btn" id="addStation">+ Add station</button>
+      <div class="edit-actions">
+        <button class="save" id="hf-save">Save format</button>
+        ${overrides.hyroxFormat ? '<button class="delete" id="hf-reset">Reset to default</button>' : ''}
+      </div>
+    </div>
+  `;
+
+  openEditModal('Edit HYROX Format', html, () => {
+    const list = document.getElementById('stationList');
+
+    const collectAndRerender = () => {
+      // Collect current state
+      list.querySelectorAll('.station-edit-row').forEach(row => {
+        const i = parseInt(row.dataset.i);
+        if (stations[i]) {
+          stations[i].name = row.querySelector('[data-f="name"]').value;
+          stations[i].detail = row.querySelector('[data-f="detail"]').value;
+          stations[i].cls = row.querySelector('[data-f="cls"]').value;
+        }
+      });
+    };
+
+    const rerender = () => {
+      list.innerHTML = renderRows();
+      attachRowHandlers();
+    };
+
+    const attachRowHandlers = () => {
+      list.querySelectorAll('[data-action="del"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          collectAndRerender();
+          const i = parseInt(btn.closest('.station-edit-row').dataset.i);
+          stations.splice(i, 1);
+          rerender();
+        });
+      });
+    };
+    attachRowHandlers();
+
+    document.getElementById('addStation').addEventListener('click', () => {
+      collectAndRerender();
+      stations.push({ name: `${stations.length+1} · NEW`, detail: '', cls: '' });
+      rerender();
+    });
+
+    document.getElementById('hf-save').addEventListener('click', () => {
+      collectAndRerender();
+      setHyroxFormat(stations);
+      closeModal();
+      showToast('HYROX format updated');
+      refreshAll();
+    });
+
+    const reset = document.getElementById('hf-reset');
+    if (reset) reset.addEventListener('click', () => {
+      overrides.hyroxFormat = null;
+      saveOverrides();
+      closeModal();
+      showToast('Restored to default');
+      refreshAll();
+    });
+  });
+}
+
+// --- Edit targets / veto points ---
+function openEditTargets() {
+  const targets = JSON.parse(JSON.stringify(resolveTargets()));
+
+  const renderRows = () => targets.map((t, i) => `
+    <div class="station-edit-row" data-i="${i}" style="grid-template-columns: 1fr 1fr 1fr auto;">
+      <input type="text" data-f="date" value="${escAttr(t.date)}" placeholder="Date">
+      <input type="text" data-f="test" value="${escAttr(t.test)}" placeholder="Test">
+      <input type="text" data-f="target" value="${escAttr(t.target)}" placeholder="Target">
+      <button class="icon-btn" data-action="del">×</button>
+    </div>
+  `).join('');
+
+  const html = `
+    <div class="edit-form">
+      <div class="edit-section-title">Targets / Key Dates</div>
+      <div id="targetList">${renderRows()}</div>
+      <button class="add-row-btn" id="addTarget">+ Add target</button>
+      <div class="edit-actions">
+        <button class="save" id="tf-save">Save targets</button>
+        ${overrides.targets ? '<button class="delete" id="tf-reset">Reset to default</button>' : ''}
+      </div>
+    </div>
+  `;
+
+  openEditModal('Edit Targets', html, () => {
+    const list = document.getElementById('targetList');
+
+    const collect = () => {
+      list.querySelectorAll('.station-edit-row').forEach(row => {
+        const i = parseInt(row.dataset.i);
+        if (targets[i]) {
+          targets[i].date = row.querySelector('[data-f="date"]').value;
+          targets[i].test = row.querySelector('[data-f="test"]').value;
+          targets[i].target = row.querySelector('[data-f="target"]').value;
+        }
+      });
+    };
+    const rerender = () => { list.innerHTML = renderRows(); attachRowHandlers(); };
+    const attachRowHandlers = () => {
+      list.querySelectorAll('[data-action="del"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          collect();
+          targets.splice(parseInt(btn.closest('.station-edit-row').dataset.i), 1);
+          rerender();
+        });
+      });
+    };
+    attachRowHandlers();
+
+    document.getElementById('addTarget').addEventListener('click', () => {
+      collect();
+      targets.push({ date: '', test: '', target: '', color: 'amber' });
+      rerender();
+    });
+
+    document.getElementById('tf-save').addEventListener('click', () => {
+      collect();
+      setTargets(targets);
+      closeModal();
+      showToast('Targets updated');
+      refreshAll();
+    });
+
+    const reset = document.getElementById('tf-reset');
+    if (reset) reset.addEventListener('click', () => {
+      overrides.targets = null;
+      saveOverrides();
+      closeModal();
+      showToast('Restored to default');
+      refreshAll();
+    });
+  });
+}
+
+// --- Edit goal race ---
+function openEditGoalRace() {
+  const g = resolveGoalRace();
+  const html = `
+    <div class="edit-form">
+      <div class="edit-section-title">Goal Race</div>
+      <div class="edit-form-grid">
+        <div>
+          <label>Brand (header)</label>
+          <input type="text" id="gf-brand" value="${escAttr(g.brand)}" placeholder="e.g. 1:15">
+        </div>
+        <div>
+          <label>Subtitle</label>
+          <input type="text" id="gf-sub" value="${escAttr(g.subtitle)}" placeholder="e.g. HYROX · 29 Oct">
+        </div>
+        <div>
+          <label>Countdown date (YYYY-MM-DD)</label>
+          <input type="text" id="gf-date" value="${escAttr(g.countdownDate)}" placeholder="2026-10-29">
+        </div>
+      </div>
+      <div class="edit-actions">
+        <button class="save" id="gf-save">Save</button>
+        ${overrides.goalRace ? '<button class="delete" id="gf-reset">Reset to default</button>' : ''}
+      </div>
+    </div>
+  `;
+  openEditModal('Edit Goal Race', html, () => {
+    document.getElementById('gf-save').addEventListener('click', () => {
+      setGoalRace({
+        brand: document.getElementById('gf-brand').value.trim(),
+        subtitle: document.getElementById('gf-sub').value.trim(),
+        countdownDate: document.getElementById('gf-date').value.trim()
+      });
+      applyGoalRace();
+      closeModal();
+      showToast('Goal race updated');
+      refreshAll();
+    });
+    const r = document.getElementById('gf-reset');
+    if (r) r.addEventListener('click', () => {
+      overrides.goalRace = null;
+      saveOverrides();
+      applyGoalRace();
+      closeModal();
+      showToast('Restored to default');
+      refreshAll();
+    });
+  });
+}
+
+function applyGoalRace() {
+  const g = resolveGoalRace();
+  document.getElementById('headerBrand').textContent = g.brand;
+  document.getElementById('headerSubtitle').textContent = g.subtitle;
+  updateCountdown();
+}
+
+// --- Export / import overrides ---
+function exportOverrides() {
+  const data = JSON.stringify({ exportedAt: new Date().toISOString(), overrides, logs }, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `tracker_backup_${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showToast('Backup downloaded');
+}
+
+function importOverrides(jsonText) {
+  try {
+    const parsed = JSON.parse(jsonText);
+    if (parsed.overrides) {
+      overrides = parsed.overrides;
+      saveOverrides();
+    }
+    if (parsed.logs) {
+      logs = parsed.logs;
+      saveLogs(logs);
+    }
+    applyGoalRace();
+    refreshAll();
+    showToast('Backup imported successfully');
+  } catch (e) {
+    alert('Invalid backup file');
+  }
+}
+
+// HTML escape helpers (for safe input value rendering)
+function escAttr(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function escHtml(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// ============ INFO TAB ============
+let activeInfo = 'zones';
+
+const INFO_CONTENT = {
+  zones: () => `
+    <h2 class="info-h2">Run Pace Zones</h2>
+    <table class="info-table">
+      <thead><tr><th>Zone</th><th>May–Jun</th><th>Jul–Aug</th><th>Sep–Oct</th></tr></thead>
+      <tbody>
+        <tr><td>Easy / Long</td><td class="mono">5:30–6:00</td><td class="mono">5:15–5:45</td><td class="mono">5:00–5:30</td></tr>
+        <tr><td>Half-marathon</td><td class="mono">4:50</td><td class="mono">4:35</td><td class="mono">4:25</td></tr>
+        <tr><td>Threshold</td><td class="mono">4:30</td><td class="mono">4:25→4:15</td><td class="mono">4:15→4:10</td></tr>
+        <tr><td>Thursday Z4 5K</td><td class="mono">4:42→4:21</td><td class="mono">4:18→4:03</td><td class="mono">4:00→3:54</td></tr>
+        <tr><td>VO2 (3–5 min)</td><td class="mono">—</td><td class="mono">—</td><td class="mono">3:55</td></tr>
+      </tbody>
+    </table>
+    <p class="info-p" style="font-size:12px;">All paces in min/km. Use Garmin average over rep, not GPS instant.</p>
+
+    <h2 class="info-h2">Thursday Z4 5K Targets</h2>
+    <table class="info-table">
+      <thead><tr><th>Block</th><th>Target time</th><th>Pace</th></tr></thead>
+      <tbody>
+        <tr><td>Weeks 1–6 (base)</td><td class="mono">23:30 → 21:45</td><td class="mono">4:42 → 4:21</td></tr>
+        <tr><td>Weeks 9–15 (threshold)</td><td class="mono">21:45 → 20:15</td><td class="mono">4:21 → 4:03</td></tr>
+        <tr><td>Week 17 5K TT</td><td class="mono" style="color:var(--gold);">≤20:00</td><td class="mono" style="color:var(--gold);">4:00</td></tr>
+        <tr><td>Weeks 18–24 (sharpening)</td><td class="mono">20:30 → 19:30</td><td class="mono">4:06 → 3:54</td></tr>
+      </tbody>
+    </table>
+    <p class="info-p" style="font-size:12px;">Z4 = HR 167–179 bpm (87–93% of max 192). Drop ~10 sec/week between race weeks.</p>
+
+    <h2 class="info-h2">Sunday Long-Run Progression</h2>
+    <table class="info-table">
+      <thead><tr><th>Phase</th><th>Distances</th></tr></thead>
+      <tbody>
+        <tr><td>Base (1–6)</td><td class="mono">8 → 17 km</td></tr>
+        <tr><td>Threshold (9–15)</td><td class="mono">16 → 21 km (HM)</td></tr>
+        <tr><td>Sharpening (18–24)</td><td class="mono">18 → 22 km (peak)</td></tr>
+        <tr><td>Taper (25)</td><td class="mono">14 km</td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="info-h2">Bike HR Zones (Wattbike)</h2>
+    <p class="info-p" style="font-size:12px;">Max HR 192, resting 54.</p>
+    <table class="info-table">
+      <thead><tr><th>Zone</th><th>% HRmax</th><th>HR (bpm)</th></tr></thead>
+      <tbody>
+        <tr class="info-row-zone"><td class="zone-z1">Z1</td><td>&lt;70%</td><td class="mono">&lt;134</td></tr>
+        <tr class="info-row-zone"><td class="zone-z2">Z2</td><td>70–80%</td><td class="mono">134–154</td></tr>
+        <tr class="info-row-zone"><td class="zone-z3">Z3</td><td>80–87%</td><td class="mono">154–167</td></tr>
+        <tr class="info-row-zone"><td class="zone-z4">Z4</td><td>87–93%</td><td class="mono">167–179</td></tr>
+        <tr class="info-row-zone"><td class="zone-z5">Z5</td><td>93–98%</td><td class="mono">179–188</td></tr>
+      </tbody>
+    </table>
+    <ul class="info-list" style="margin-top:8px;font-size:12px;color:var(--text-dim);">
+      <li>Z1 conversational</li>
+      <li>Z2 comfortable, full sentences</li>
+      <li>Z3 comfortably hard</li>
+      <li>Z4 hard, broken sentences</li>
+      <li>Z5 very hard, single words</li>
+    </ul>
+
+    <h2 class="info-h2">Daily Cap</h2>
+    <div class="callout-box"><strong>2 hours max per day.</strong> No double sessions. If a session would run over, cut from end (cool-down/accessory) before sacrificing main work.</div>
+
+    <h2 class="info-h2">Early Warning</h2>
+    <div class="warning-box"><strong>Resting HR &gt;59 for 3+ days</strong> = recovery failing. Cut Block 4 across all strength sessions for one week, drop Mon Legs explosive work, reassess.</div>
+  `,
+
+  strength: () => `
+    <h2 class="info-h2">Push / Pull / Legs Programme</h2>
+    <p class="info-p">Three sessions per week. Mon Legs, Wed Push (after run), Fri Pull. Each runs ~110 min within the 2h cap.</p>
+
+    <h2 class="info-h2"><span style="color:var(--purple);">Legs, Monday (~110 min)</span></h2>
+
+    <div class="block-card warmup">
+      <div class="block-name">Block 1 · Warm-up · 15 min</div>
+      <ul class="info-list">
+        <li>5 min easy bike spin</li>
+        <li>Dynamic mobility: leg swings, hip openers, ankle circles, world's greatest stretch</li>
+        <li>Activation: glute bridges 2×15, banded clamshells 2×15</li>
+      </ul>
+    </div>
+
+    <div class="block-card heavy">
+      <div class="block-name">Block 2 · Heavy Compound · 40 min</div>
+      <ul class="info-list">
+        <li><strong>Back squat:</strong> 4 × 6 (heavy, ~85% effort)</li>
+        <li><strong>Romanian deadlift:</strong> 4 × 8</li>
+        <li><strong>Bulgarian split squat:</strong> 3 × 8 each leg</li>
+        <li>Rest 90–120s between heavy sets</li>
+      </ul>
+    </div>
+
+    <div class="block-card">
+      <div class="block-name">Block 3 · Accessory · 25 min</div>
+      <ul class="info-list">
+        <li>Walking lunges (DB loaded): 3 × 12 each</li>
+        <li>Single-leg calf raise (3-sec eccentric): 4 × 10 each</li>
+        <li>Tibialis raises (heavy): 3 × 15 each</li>
+        <li>Hip thrusts: 3 × 10</li>
+        <li>Hanging leg raises: 3 × 10</li>
+      </ul>
+    </div>
+
+    <div class="block-card power">
+      <div class="block-name">Block 4 · Low-impact power · 12 min</div>
+      <ul class="info-list">
+        <li>Trap bar deadlift: 3 × 3 (explosive concentric, controlled eccentric)</li>
+        <li>KB swings: 3 × 12 (heavy, hip-hinge focus)</li>
+        <li>Med ball slams: 3 × 8</li>
+        <li class="warn">No jumping, protects shin while still building rate of force development</li>
+      </ul>
+    </div>
+
+    <div class="block-card cooldown">
+      <div class="block-name">Block 5 · Cool-down · 15 min</div>
+      <ul class="info-list">
+        <li>Foam roll calves, quads, glutes, IT band</li>
+        <li>Static stretch: hip flexors, hamstrings, calves (30s holds)</li>
+      </ul>
+    </div>
+
+    <h2 class="info-h2"><span style="color:var(--purple);">Push, Wednesday (~95 min)</span></h2>
+    <p class="info-p" style="font-size:12px;font-style:italic;">Heavy upper body, bench, OHP, full accessory work, shin/core. No leg impact, no metcon. Push for PRs on bench.</p>
+
+    <div class="block-card warmup">
+      <div class="block-name">Block 1 · Warm-up · 12 min</div>
+      <ul class="info-list">
+        <li>5 min easy bike spin or row</li>
+        <li>Band pull-aparts 2 × 15, arm circles</li>
+        <li>Scapular push-ups 2 × 10</li>
+        <li>Band dislocates 2 × 10</li>
+        <li>Empty bar bench 2 × 10</li>
+      </ul>
+    </div>
+
+    <div class="block-card heavy">
+      <div class="block-name">Block 2 · Heavy Compound · 35 min</div>
+      <ul class="info-list">
+        <li><strong>Bench press: 5 × 5</strong> (heavy, push for PR)</li>
+        <li><strong>Overhead press: 4 × 6</strong> (strict, heavy)</li>
+        <li>Incline DB press: 4 × 8 (heavy)</li>
+        <li>Rest 2–3 min between heavy sets</li>
+      </ul>
+    </div>
+
+    <div class="block-card">
+      <div class="block-name">Block 3 · Accessory · 25 min</div>
+      <ul class="info-list">
+        <li>Lateral raises: 4 × 12</li>
+        <li>Dumbbell pullover: 3 × 10</li>
+        <li>Tricep dips: 3 × 8 (weighted if possible)</li>
+        <li>Tricep rope pushdown: 3 × 12</li>
+        <li>Overhead tricep extension: 3 × 12</li>
+        <li>Cable chest fly: 3 × 12</li>
+      </ul>
+    </div>
+
+    <div class="block-card shin">
+      <div class="block-name">Block 4 · Shin + Core · 12 min</div>
+      <ul class="info-list">
+        <li>Tibialis raises: 3 × 20</li>
+        <li>Heel walks: 3 × 30s (toes up, walk forward)</li>
+        <li>Soleus calf raise (bent knee): 3 × 15</li>
+        <li>Pallof press: 3 × 10 each side</li>
+        <li>Hollow body hold: 3 × 30s</li>
+        <li>Side plank: 2 × 30s each side</li>
+      </ul>
+    </div>
+
+    <div class="block-card cooldown">
+      <div class="block-name">Block 5 · Cool-down · 6 min</div>
+      <ul class="info-list">
+        <li>Pec doorway stretch</li>
+        <li>Sleeper stretch</li>
+        <li>Tricep overhead stretch</li>
+        <li>Lat hanging stretch</li>
+      </ul>
+    </div>
+
+    <h2 class="info-h2"><span style="color:var(--purple);">Pull, Friday (~110 min)</span></h2>
+
+    <div class="block-card warmup">
+      <div class="block-name">Block 1 · Warm-up · 10 min</div>
+      <ul class="info-list">
+        <li>5 min easy bike spin</li>
+        <li>Thoracic mobility: cat-cow, thread the needle, dislocates, scap pull-ups</li>
+      </ul>
+    </div>
+
+    <div class="block-card heavy">
+      <div class="block-name">Block 2 · Heavy Compound · 40 min</div>
+      <ul class="info-list">
+        <li><strong>Pull-ups</strong> (or assisted/lat pulldown): 5 × 6–8</li>
+        <li><strong>Barbell or Pendlay row:</strong> 4 × 8</li>
+        <li>Single-arm DB row: 3 × 10 each</li>
+        <li>Deadlift (lighter, technique): 3 × 5</li>
+      </ul>
+    </div>
+
+    <div class="block-card">
+      <div class="block-name">Block 3 · Accessory · 35 min</div>
+      <ul class="info-list">
+        <li>Face pulls: 4 × 15</li>
+        <li>Reverse fly: 3 × 12</li>
+        <li>Bicep curls: 3 × 10</li>
+        <li>Hammer curls: 3 × 10</li>
+        <li>Cable straight-arm pulldown: 3 × 12</li>
+        <li>Shrugs: 3 × 12</li>
+      </ul>
+    </div>
+
+    <div class="block-card">
+      <div class="block-name">Block 4 · Posterior chain + core · 15 min</div>
+      <ul class="info-list">
+        <li>Single-leg glute bridges: 3 × 12 each</li>
+        <li>Single-leg RDL (light DB): 3 × 8 each</li>
+        <li>Side plank with leg lift: 3 × 10 each</li>
+        <li>Dead bugs: 3 × 10</li>
+      </ul>
+    </div>
+
+    <div class="block-card cooldown">
+      <div class="block-name">Block 5 · Cool-down · 10 min</div>
+      <ul class="info-list">
+        <li>Foam roll: lats, mid-back, hamstrings</li>
+        <li>Static stretch: hamstrings, hip flexors, child's pose</li>
+      </ul>
+    </div>
+
+    <h2 class="info-h2"><span style="color:var(--gold);">HYROX 50% Sim, Saturday format</span></h2>
+    <p class="info-p">Same 10 stations every Saturday. Pro weights from day 1. Target time drops over the block.</p>
+
+    <table class="info-table">
+      <thead><tr><th>#</th><th>Station</th><th>Volume / load</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">1</td><td>Run</td><td class="mono">500 m</td></tr>
+        <tr><td class="mono">2</td><td>Ski erg</td><td class="mono">500 m</td></tr>
+        <tr><td class="mono">3</td><td>Sled push</td><td class="mono">25 m · 200 kg</td></tr>
+        <tr><td class="mono">4</td><td>Sled pull</td><td class="mono">25 m · 152 kg</td></tr>
+        <tr><td class="mono">5</td><td>Burpee broad jumps</td><td class="mono">40 m</td></tr>
+        <tr><td class="mono">6</td><td>Row</td><td class="mono">500 m</td></tr>
+        <tr><td class="mono">7</td><td>Farmer's carry</td><td class="mono">100 m · 2×32 kg</td></tr>
+        <tr><td class="mono">8</td><td>Sandbag lunges</td><td class="mono">50 m · 30 kg</td></tr>
+        <tr><td class="mono">9</td><td>Wall balls</td><td class="mono">50 reps · 9 kg</td></tr>
+        <tr><td class="mono">10</td><td>Run finish</td><td class="mono">500 m</td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="info-h2">50% sim → full HYROX projection</h2>
+    <table class="info-table">
+      <thead><tr><th>50% sim</th><th>Implied full</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">41:00</td><td class="mono">1:28 (current)</td></tr>
+        <tr><td class="mono">39:30</td><td class="mono">1:25</td></tr>
+        <tr><td class="mono">37:00</td><td class="mono">1:20</td></tr>
+        <tr><td class="mono" style="color:var(--gold);">34:30</td><td class="mono" style="color:var(--gold);"><strong>1:15 ✓</strong></td></tr>
+        <tr><td class="mono">33:30</td><td class="mono">1:13 (peak)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout-box"><strong>Sim execution:</strong> race intent, transitions count toward time, walk transitions sharp. Avoid redlining early stations, pacing is the limiter, not strength.</div>
+
+    <h2 class="info-h2">Phase Loading</h2>
+    <table class="info-table">
+      <thead><tr><th>Phase</th><th>Heavy compound</th></tr></thead>
+      <tbody>
+        <tr><td>Wks 1–2 (viva)</td><td>Light intro</td></tr>
+        <tr><td>Wks 3–7 (base)</td><td>Add 2.5kg every 1–2 wks</td></tr>
+        <tr><td>Wks 8–15 (build)</td><td>Push hard, RPE 8</td></tr>
+        <tr><td>Wks 17–25 (sharpen)</td><td>Maintain, drop to 3×5</td></tr>
+        <tr><td>Race weeks</td><td>Deload entirely</td></tr>
+      </tbody>
+    </table>
+  `,
+
+  races: () => `
+    <h2 class="info-h2">Key Targets</h2>
+    <table class="info-table">
+      <thead><tr><th>Date</th><th>Test</th><th>Target</th></tr></thead>
+      <tbody>
+        <tr><td>9 May</td><td>HYROX baseline</td><td class="mono">~41:00 50%</td></tr>
+        <tr><td>24 Jun</td><td>Chippenham 10K</td><td class="mono" style="color:var(--green);">≤47:00</td></tr>
+        <tr><td>29 Aug</td><td>5K TT</td><td class="mono" style="color:var(--green);">≤20:00</td></tr>
+        <tr><td>19 Sep</td><td>10K tune-up</td><td class="mono" style="color:var(--green);">≤43:00</td></tr>
+        <tr><td>15 Aug</td><td>First HM distance</td><td class="mono">21K easy</td></tr>
+        <tr><td>17 Oct</td><td>Peak HYROX sim</td><td class="mono" style="color:var(--gold);">≤33:30 50%</td></tr>
+        <tr><td><strong>29 Oct</strong></td><td><strong>HYROX RACE</strong></td><td class="mono" style="color:var(--gold);"><strong>1:15:00</strong></td></tr>
+      </tbody>
+    </table>
+    <div class="callout-box"><strong>Trajectory check:</strong> on track if 50% sim drops 30s/2 weeks. If August sims plateau above 36:00, target shifts to 1:18. If hitting 34:00 by mid-Sept, sub-1:13 in play.</div>
+
+    <h2 class="info-h2"><span style="color:var(--red);">Chippenham 10K · 24 Jun · 19:30</span></h2>
+    <p class="info-p"><strong>Goal: sub-47 (4:42/km)</strong></p>
+
+    <div class="info-h3 amber" style="margin-top:12px;">Daytime Fuelling</div>
+    <ul class="info-list">
+      <li>07:00, substantial breakfast (porridge + banana + coffee)</li>
+      <li>13:00, proper lunch, easy carbs + protein</li>
+      <li>16:00, small snack: banana + nuts, or toast with honey</li>
+      <li>17:00 onwards, nothing solid, sips of water only</li>
+      <li class="warn">No caffeine after 16:00 unless tested in training</li>
+    </ul>
+
+    <div class="info-h3 amber" style="margin-top:12px;">Venue Timeline (~17:45 arrival)</div>
+    <ul class="info-list">
+      <li>17:45–18:30, registration, kit, mental prep</li>
+      <li>18:45, 10 min easy jog</li>
+      <li>18:55, dynamic stretches</li>
+      <li>19:05, 4×100m strides</li>
+      <li>19:15, 4×30s @ goal pace</li>
+      <li>19:25, on the line</li>
+    </ul>
+
+    <div class="info-h3 amber" style="margin-top:12px;">Pacing</div>
+    <table class="info-table">
+      <thead><tr><th>KM</th><th>Pace</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td><strong>1K</strong></td><td class="mono" style="color:var(--green);">4:48</td><td style="font-size:12px;">Feels easy. Hold back.</td></tr>
+        <tr><td><strong>2–5K</strong></td><td class="mono" style="color:var(--amber);">4:42</td><td style="font-size:12px;">5K target: 23:30. Faster than 23:15 = too hot.</td></tr>
+        <tr><td><strong>6–8K</strong></td><td class="mono" style="color:var(--amber);">4:40</td><td style="font-size:12px;">Settle into rhythm</td></tr>
+        <tr><td><strong>9–10K</strong></td><td class="mono" style="color:var(--red);">4:35+</td><td style="font-size:12px;">Whatever's left</td></tr>
+      </tbody>
+    </table>
+
+    <div class="warning-box"><strong>Heat:</strong> if forecast 22°C+, add 5–10 sec/km, target 47:30. Shoes: daily trainer unless confirmed road-only beforehand.</div>
+
+    <h2 class="info-h2"><span style="color:var(--gold);">A-RACE · HYROX · Thu 29 Oct</span></h2>
+    <p class="info-p"><strong>Target: 1:15:00 Pro Open</strong></p>
+
+    <div class="info-h3 gold" style="margin-top:12px;">Pacing, full 8-station race</div>
+    <table class="info-table">
+      <thead><tr><th>Segment</th><th>Target</th><th>Cumulative</th></tr></thead>
+      <tbody>
+        <tr><td>Run 1 (1km)</td><td class="mono">4:30</td><td class="mono">4:30</td></tr>
+        <tr><td>Ski erg (1km)</td><td class="mono">4:00</td><td class="mono">8:30</td></tr>
+        <tr><td>Run 2</td><td class="mono">4:30</td><td class="mono">13:00</td></tr>
+        <tr><td>Sled push (50m)</td><td class="mono">3:00</td><td class="mono">16:00</td></tr>
+        <tr><td>Run 3</td><td class="mono">4:35</td><td class="mono">20:35</td></tr>
+        <tr><td>Sled pull (50m)</td><td class="mono">3:00</td><td class="mono">23:35</td></tr>
+        <tr><td>Run 4</td><td class="mono">4:35</td><td class="mono">28:10</td></tr>
+        <tr><td>Burpee broad jumps (80m)</td><td class="mono">4:30</td><td class="mono">32:40</td></tr>
+        <tr><td>Run 5</td><td class="mono">4:40</td><td class="mono">37:20</td></tr>
+        <tr><td>Row (1km)</td><td class="mono">4:00</td><td class="mono">41:20</td></tr>
+        <tr><td>Run 6</td><td class="mono">4:45</td><td class="mono">46:05</td></tr>
+        <tr><td>Farmer's carry (200m)</td><td class="mono">2:30</td><td class="mono">48:35</td></tr>
+        <tr><td>Run 7</td><td class="mono">4:45</td><td class="mono">53:20</td></tr>
+        <tr><td>Sandbag lunges (100m)</td><td class="mono">4:30</td><td class="mono">57:50</td></tr>
+        <tr><td>Run 8</td><td class="mono">4:50</td><td class="mono">1:02:40</td></tr>
+        <tr><td>Wall balls (100 reps)</td><td class="mono">5:00</td><td class="mono">1:07:40</td></tr>
+        <tr><td>+ transitions (~7 min)</td><td class="mono">7:00</td><td class="mono"><strong>1:14:40</strong></td></tr>
+      </tbody>
+    </table>
+    <div class="callout-box"><strong>Pacing rules:</strong> First 3 runs at goal pace +5s. Stations: smooth, never redline. If sled feels heavy, take 1 short break, losing 10s on a station beats a 90s blow-up. Wall balls: break into 25-25-25-25 with 5-breath rests, never grind to failure.</div>
+
+    <div class="info-h3 gold" style="margin-top:12px;">Race Day Fuelling</div>
+    <ul class="info-list">
+      <li>3h before: porridge + banana + coffee (~600 cal)</li>
+      <li>2h before: 500ml water + electrolytes</li>
+      <li>1h before: small banana or 1 gel</li>
+      <li>30 min before: 1 gel + caffeine if tested</li>
+      <li>During: gel after wall balls if going over 1:20</li>
+      <li class="warn">Nothing new on race day</li>
+    </ul>
+
+    <div class="info-h3 gold" style="margin-top:12px;">Warm-up (~25 min, finish 10 min before)</div>
+    <ul class="info-list">
+      <li>5 min easy jog</li>
+      <li>Dynamic mobility (leg swings, hip openers, T-spine)</li>
+      <li>Activation: glute bridges 2×15, banded clamshells 2×15</li>
+      <li>3×30s ski erg progressive</li>
+      <li>3×30s row progressive</li>
+      <li>10 air squats + 5 burpees + 10 wall balls (light)</li>
+      <li>2×100m strides at goal pace</li>
+      <li>4 min before: in corral, light bouncing</li>
+    </ul>
+
+    <div class="info-h3 gold" style="margin-top:12px;">Mental cues by station</div>
+    <ul class="info-list">
+      <li><strong>Runs:</strong> "Quick feet, low arms"</li>
+      <li><strong>Ski:</strong> "Drive hips, full extension"</li>
+      <li><strong>Sled push:</strong> "Low body, drive through floor"</li>
+      <li><strong>Sled pull:</strong> "Hand over hand, don't sit back too far"</li>
+      <li><strong>Burpee jumps:</strong> "Land soft, breathe at top"</li>
+      <li><strong>Row:</strong> "Legs-back-arms, easy spm"</li>
+      <li><strong>Farmer's:</strong> "Tall, fast steps, don't swing"</li>
+      <li><strong>Lunges:</strong> "Step deep, knee tracks toe"</li>
+      <li><strong>Wall balls:</strong> "Catch, hip drive, exhale at top"</li>
+    </ul>
+  `,
+
+  rules: () => `
+    <h2 class="info-h2">Adjustment Rules</h2>
+
+    <div class="block-card heavy">
+      <div class="block-name">1 · Shin signal means full stop</div>
+      <p class="info-p" style="margin:0;font-size:13px;">Sharp pain, point tenderness, or pain that worsens during a run: walk home, take 3 days off, swap the next scheduled run for a bike Z2 session. If symptoms return, consult a physiotherapist.</p>
+    </div>
+
+    <div class="block-card">
+      <div class="block-name">2 · Saturday HYROX sim is the priority session</div>
+      <p class="info-p" style="margin:0;font-size:13px;">Each week's primary stimulus. If it must be moved, push to Sunday and convert Sunday's long run to an easy 30-minute recovery jog.</p>
+    </div>
+
+    <div class="block-card">
+      <div class="block-name">3 · Sunday long run is sacred (aerobic anchor)</div>
+      <p class="info-p" style="margin:0;font-size:13px;">Volume builds the engine for HYROX. If Sunday is impossible, push to Monday and shift Monday Legs to Tuesday (replacing the bike).</p>
+    </div>
+
+    <div class="block-card">
+      <div class="block-name">4 · Monday Legs is the most droppable in fatigue</div>
+      <p class="info-p" style="margin:0;font-size:13px;">If Saturday HYROX times regress or Sunday long feels flat for 2 consecutive weeks, cut Monday Legs Block 4 (low-impact power) first, then accessories, then the heavy compound block.</p>
+    </div>
+
+    <div class="block-card">
+      <div class="block-name">5 · Two-hour daily cap is non-negotiable</div>
+      <p class="info-p" style="margin:0;font-size:13px;">If a session runs over, cut from the end (cool-down or accessory work) before sacrificing the main lifts or intervals.</p>
+    </div>
+
+    <div class="block-card">
+      <div class="block-name">6 · Sleep below 6 hours for three nights running</div>
+      <p class="info-p" style="margin:0;font-size:13px;">Downgrade Saturday HYROX sim to a technique session at 70 percent intensity, drop Monday Legs Block 4, and shorten Sunday long by 25 percent.</p>
+    </div>
+
+    <div class="block-card">
+      <div class="block-name">7 · Sickness</div>
+      <p class="info-p" style="margin:0;font-size:13px;">Above-neck symptoms: bike Z2 only, no quality work, no heavy strength. Below-neck symptoms: full rest until 48 hours symptom-free, then resume training one phase back from where you left off.</p>
+    </div>
+
+    <div class="block-card">
+      <div class="block-name">8 · Bike substitution priority</div>
+      <p class="info-p" style="margin:0;font-size:13px;">If you must miss the Tuesday bike, replace it with a 30-minute walk or take full rest. Do not attempt to make it up later in the week.</p>
+    </div>
+
+    <div class="block-card heavy">
+      <div class="block-name">9 · De-load enforced (post-fracture protocol)</div>
+      <p class="info-p" style="margin:0;font-size:13px;">The plan was de-loaded specifically due to the December 2025 shin fracture. Bone remodelling continues for 12 to 16 weeks after pain resolves. Do not reinstate the explosive jumps, Wednesday burpees, or Sunday quality reps without 8 consecutive weeks of fully clean shin status first.</p>
+    </div>
+
+    <div class="block-card">
+      <div class="block-name">10 · Thursday and Sunday are recovery anchors</div>
+      <p class="info-p" style="margin:0;font-size:13px;">Thursday is an easy 5K at conversational effort. Sunday is an easy long run at conversational pace. These two days protect Saturday HYROX, Monday Legs, and Friday Pull. If either is converted to quality work, expect resting heart rate to climb within 2 weeks.</p>
+    </div>
+
+    <h2 class="info-h2">What to Track</h2>
+    <ul class="info-list">
+      <li>Saturday HYROX sim total time and station splits</li>
+      <li>Sunday long run distance, average pace, RPE</li>
+      <li>Thursday 5K easy pace and how it felt</li>
+      <li>Bike minutes by zone (Z2 / Z3 to Z4 / Z5)</li>
+      <li>Strength top sets: squat, bench, deadlift, OHP, pull-up reps</li>
+      <li>Resting heart rate (Garmin baseline approximately 54)</li>
+      <li>Sleep hours per night</li>
+      <li>Subjective leg feel before each run</li>
+      <li>Shin status (clear, niggle, or pain)</li>
+    </ul>
+
+    <h2 class="info-h2">Phase Overview</h2>
+    <table class="info-table">
+      <thead><tr><th>Phase</th><th>Weeks</th><th>Focus</th></tr></thead>
+      <tbody>
+        <tr><td style="color:var(--green);">Base</td><td>1–6</td><td style="font-size:12px;">Aerobic foundation, Z4 5K introduction, long-run build to 17K</td></tr>
+        <tr><td style="color:var(--red);">Race</td><td>7–8</td><td style="font-size:12px;">Chippenham 10K (24 Jun)</td></tr>
+        <tr><td style="color:var(--amber);">Threshold</td><td>9–15</td><td style="font-size:12px;">Z4 5K drops to 20:15, long-run reaches HM (21K) by W15</td></tr>
+        <tr><td style="color:var(--red);">Race</td><td>16–17</td><td style="font-size:12px;">5K TT week, sub-20 target (29 Aug)</td></tr>
+        <tr><td style="color:var(--purple);">VO2 build</td><td>18–21</td><td style="font-size:12px;">Z4 5K to sub-20 territory, HM-plus distances</td></tr>
+        <tr><td style="color:var(--blue);">Sharpening</td><td>22–24</td><td style="font-size:12px;">HYROX-specific intent, peak 22K Sunday long</td></tr>
+        <tr><td style="color:var(--blue);">Taper</td><td>25</td><td style="font-size:12px;">Volume drops, sharpness held</td></tr>
+        <tr><td style="color:var(--red);">Race</td><td>26</td><td style="font-size:12px;">HYROX RACE Thu 29 Oct</td></tr>
+        <tr><td>Recovery</td><td>27</td><td style="font-size:12px;">Post-HYROX recovery week</td></tr>
+      </tbody>
+    </table>
+  `
+};
+
+function renderInfo() {
+  // Update active tab
+  document.querySelectorAll('.info-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.info === activeInfo);
+  });
+  // Render content
+  document.getElementById('infoContent').innerHTML = INFO_CONTENT[activeInfo]();
+}
+
+// Wire up info tab clicks (delegated)
+document.getElementById('infoTabs').addEventListener('click', (e) => {
+  const btn = e.target.closest('.info-tab');
+  if (!btn) return;
+  activeInfo = btn.dataset.info;
+  renderInfo();
+  window.scrollTo(0, 0);
+});
+
+// ============ COUNTDOWN ============
+function updateCountdown() {
+  const t = new Date();
+  const ts = t.toISOString().slice(0,10);
+  const goal = resolveGoalRace().countdownDate;
+  const diff = daysBetween(ts, goal);
+  document.getElementById('countdownNum').textContent = diff > 0 ? diff : (diff === 0 ? 'TODAY' : '—');
+}
+
+// ============ INSTALL HINT ============
+function maybeShowInstallHint() {
+  if (window.matchMedia('(display-mode: standalone)').matches) return;
+  if (!('ontouchstart' in window)) return;
+  if (localStorage.getItem('install_dismissed')) return;
+  document.getElementById('installHintWrap').innerHTML = `
+    <div class="install-hint">
+      <strong>Install on iPhone</strong>: tap the Share button in Safari → <strong>Add to Home Screen</strong>. The app will run full-screen and your data stays on your phone.
+      <br><button class="dismiss" id="dismissInstall">Dismiss</button>
+    </div>
+  `;
+  document.getElementById('dismissInstall').addEventListener('click', () => {
+    localStorage.setItem('install_dismissed', '1');
+    document.getElementById('installHintWrap').innerHTML = '';
+  });
+}
+
+// ============ INIT ============
+function refreshAll() {
+  renderToday();
+  if (currentScreen === 'week') renderWeek();
+  if (currentScreen === 'plan') renderPlan();
+  if (currentScreen === 'stats') renderStats();
+}
+
+applyGoalRace();
+updateCountdown();
+maybeShowInstallHint();
+renderToday();
+
+// Re-check countdown / today every minute
+setInterval(() => {
+  updateCountdown();
+  if (currentScreen === 'today') renderToday();
+}, 60000);
+
+// Service worker for offline (uses Cache API of the loaded HTML itself)
+if ('serviceWorker' in navigator) {
+  // Inline service worker via blob
+  const swCode = `
+    const CACHE = 'tracker-v1';
+    self.addEventListener('install', e => self.skipWaiting());
+    self.addEventListener('activate', e => self.clients.claim());
+    self.addEventListener('fetch', e => {
+      e.respondWith(
+        caches.open(CACHE).then(c =>
+          c.match(e.request).then(r =>
+            r || fetch(e.request).then(resp => {
+              if (resp.ok && e.request.method === 'GET') c.put(e.request, resp.clone());
+              return resp;
+            }).catch(() => r)
+          )
+        )
+      );
+    });
+  `;
+  try {
+    const blob = new Blob([swCode], { type: 'application/javascript' });
+    navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
+  } catch {}
+}
+</script>
+</body>
+</html>
